@@ -4,6 +4,7 @@ type ErrorBody = {
   code: HttpStatus;
   status: string;
   message: string;
+  innerError?: Error;
 };
 
 export class MyError extends HttpException {

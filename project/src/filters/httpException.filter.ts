@@ -9,7 +9,12 @@ import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as moment from 'moment-timezone';
-import { getQueryParams, getOffsetByName, TimezoneOffset, getCurrentTime } from '@/shared';
+import {
+  getQueryParams,
+  getOffsetByName,
+  TimezoneOffset,
+  getCurrentTime,
+} from '@/shared';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -39,6 +44,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.stack
         : 'Internal Server Error without MyError';
 
+    const innerStack =
+      exception instanceof MyError && exception.error?.innerError
+        ? '\n' + exception.error.innerError.stack
+        : '';
+    // TODO: access.logに出せるようにする
+    console.log(innerStack);
     const ip = request.headers['x-forwarded-for'];
 
     // 時間の設定をする

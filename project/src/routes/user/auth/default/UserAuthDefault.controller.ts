@@ -1,5 +1,5 @@
 import { DefaultAuthDto } from '@/shared/dto';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { UserAuthDefaultService } from './UserAuthDefault.service';
 import { MainDatasourceProvider } from '@/datasource/mainDatasource.provider';
 import { AuthInfo } from '@prisma/client';
@@ -42,7 +42,12 @@ export class UserAuthDefaultController {
       };
     } catch (error) {
       if (error instanceof MyError) throw error;
-      throw Unexpected();
+      throw new MyError({
+        code: HttpStatus.EXPECTATION_FAILED,
+        status: 'Unexpected',
+        message: 'Unexpected',
+        innerError: error,
+      });
     } finally {
       await this.datasource.connect.$disconnect();
     }
