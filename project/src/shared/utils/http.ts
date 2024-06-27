@@ -15,11 +15,13 @@ export function getQueryParams(url: string): Record<string, string> {
     return {};
   }
 
-  const queryParams = queryString.split('&').reduce((acc, param) => {
-    const [key, value] = param.split('=');
-    acc[key] = decodeURIComponent(value);
-    return acc;
-  }, {});
+  const queryParams = queryString
+    .split('&')
+    .reduce((acc: { [key: string]: string }, param) => {
+      const [key, value] = param.split('=');
+      acc[key] = decodeURIComponent(value);
+      return acc;
+    }, {});
 
   return queryParams;
 }

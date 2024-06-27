@@ -1,4 +1,5 @@
-import { DefaultAuthDto, AccountDto } from '../dto';
+import { DefaultAuthDto } from '../dto';
+import { AuthRole, AuthType } from '../enum';
 
 export enum HttpMethod {
   GET = 'get',
@@ -8,56 +9,98 @@ export enum HttpMethod {
 }
 
 export type ApiSchemaInfo = {
-  loginUserAuthDefault: {
-    endpoint: '/user/auth/default';
+  /*
+    デフォルト認証型: /user/auth/default
+  */
+  createUserAuthDefault: {
+    endpoint: '/user/auth/default/create';
     method: HttpMethod.POST;
     request: {
       body: DefaultAuthDto;
     };
     response: {
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': CommonSchema<AccountDto>['schemas']['OkResponse'];
+        message: string;
+        data: {
+          authId: string;
         };
       };
-      default: {
-        headers: {
-          [name: string]: unknown;
+    };
+  };
+  loginUserAuthDefault: {
+    endpoint: '/user/auth/default/login';
+    method: HttpMethod.POST;
+    request: {
+      body: DefaultAuthDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          authId: string;
         };
-        content: {
-          'application/json': CommonSchema<never>['schemas']['ErrorResponse'];
+      };
+    };
+  };
+  logoutUserAuthDefault: {
+    endpoint: '/user/auth/default/:authId/logout';
+    method: HttpMethod.POST;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+  getUserAuthDefault: {
+    endpoint: '/user/auth/default/:authId';
+    method: HttpMethod.GET;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          authId: string;
+          email: string;
+          authType: AuthType;
+          authRole: AuthRole;
+        };
+      };
+    };
+  };
+  getListOfUserAuthDefault: {
+    endpoint: '/user/auth/default';
+    method: HttpMethod.GET;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          authList: {
+            authId: string;
+            email: string;
+            authType: AuthType;
+            authRole: AuthRole;
+          };
         };
       };
     };
   };
 };
 
-export interface CommonSchema<T> {
-  schemas: {
-    OkResponse: {
-      data: T;
-    };
-    ErrorResponse: {
-      error: {
-        code: string;
-        status: string;
-        message: string;
-      };
-    };
-  };
-}
-
 export type RequestBody<Action extends keyof ApiSchemaInfo> =
   ApiSchemaInfo[Action]['request']['body'];
 
-// // TODO: やりかえる。
-export type ResponseBody<Action extends keyof ApiSchemaInfo> =
-  | ApiSchemaInfo[Action]['response'][200]['content']['application/json']
-  | ApiSchemaInfo[Action]['response']['default']['content']['application/json'];
+// // // TODO: やりかえる。
+// export type ResponseBody<Action extends keyof ApiSchemaInfo> =
+//   | ApiSchemaInfo[Action]['response'][200]['content']['application/json']
+//   | ApiSchemaInfo[Action]['response']['default']['content']['application/json'];
 
-export type Response<Action extends keyof ApiSchemaInfo> =
-  | ApiSchemaInfo[Action]['response'][200]
-  | ApiSchemaInfo[Action]['response'];
+export type ResponseBody<Action extends keyof ApiSchemaInfo> =
+  ApiSchemaInfo[Action]['response'][200];

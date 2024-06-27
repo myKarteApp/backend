@@ -1,20 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
-import { AuthInfo } from '@prisma/client';
-import { MainDatasourceProvider } from '@/datasource/mainDatasource.provider';
+import { AuthInfo, PrismaClient } from '@prisma/client';
 import { DefaultAuthDto } from '@/shared';
+import { MainDatasourceProvider } from '@/datasource';
 
 @Injectable()
 export class UserAuthDefaultService {
-  constructor(private readonly datasource: MainDatasourceProvider) {}
-
-  private readonly privateKey = process.env.JWS_PRIVATE_KEY;
-  private readonly jwsExpiresIn = '1h';
   private readonly hashSalt = 10;
-
-  public async createAuthInfo(dto: DefaultAuthDto, newAuthId: string) {
-    await this.datasource.connect.authInfo.create({
+  constructor(protected readonly datasource: MainDatasourceProvider) {}
+  /*
+    create
+  */
+  public async createAuthInfo(
+    dto: DefaultAuthDto,
+    newAuthId: string,
+    _connect?: PrismaClient,
+  ) {
+    await this.connect(_connect).authInfo.create({
       data: {
         authId: newAuthId,
         email: dto.email,
@@ -24,20 +26,39 @@ export class UserAuthDefaultService {
       },
     });
   }
-
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.hashSalt);
   }
-
-  public async findUnique(authId: string): Promise<AuthInfo | null> {
-    return this.datasource.connect.authInfo.findUnique({
+  /*
+    read
+  */
+  public async findById(
+    authId: string,
+    _connect?: PrismaClient,
+  ): Promise<AuthInfo | null> {
+    return this.connect(_connect).authInfo.findUnique({
       where: {
         authId: authId,
+        isDeleted: false,
       },
     });
   }
-  public async createJwsToken(dto: AuthInfo): Promise<string> {
-    return jwt.sign(dto, this.privateKey, { expiresIn: this.jwsExpiresIn });
+
+  public async findByEmail(
+    dto: DefaultAuthDto,
+    _connect?: PrismaClient,
+  ): Promise<AuthInfo | null> {
+    const authInfo: AuthInfo | null = await this.connect(
+      _connect,
+    ).authInfo.findUnique({
+      where: {
+        email: dto.email,
+        isDeleted: false,
+      },
+    });
+    if (!authInfo) return null;
+    if (!this.comparePasswords(dto.password, authInfo.password)) return null;
+    return authInfo;
   }
 
   public async comparePasswords(
@@ -46,5 +67,12 @@ export class UserAuthDefaultService {
   ): Promise<boolean> {
     // bcryptを使用して平文のパスワードをハッシュ化されたパスワードと比較する
     return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  /*
+    other
+  */
+  protected connect(_connect: PrismaClient | undefined): PrismaClient {
+    return _connect ? _connect : this.datasource.connect;
   }
 }

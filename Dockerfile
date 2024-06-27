@@ -9,6 +9,9 @@ RUN npm i -g @nestjs/cli
 
 # ポートを公開
 WORKDIR /usr/app/project
+
+RUN mkdir -p ./logs
+RUN touch ./logs/access.log
 EXPOSE 4000
 
 # アプリケーションを起動

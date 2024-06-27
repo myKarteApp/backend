@@ -1,12 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 
-import { MainDatasourceProvider } from './datasource/mainDatasource.provider';
 import * as crypto from 'crypto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly datasource: MainDatasourceProvider) {}
-
   @Get()
   async getHello() {
     const privateKey = crypto.randomBytes(32).toString('base64');
@@ -33,17 +30,4 @@ export class AppController {
     // }
     // return result;
   }
-}
-
-function generateRandomString(length: number): string {
-  const charset =
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let randomString = '';
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    randomString += charset[randomIndex];
-  }
-
-  return randomString;
 }

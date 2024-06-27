@@ -8,13 +8,7 @@ import {
 import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as moment from 'moment-timezone';
-import {
-  getQueryParams,
-  getOffsetByName,
-  TimezoneOffset,
-  getCurrentTime,
-} from '@/shared';
+import { getCurrentTime } from '@/shared';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -25,27 +19,27 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   catch(exception: any, host: ArgumentsHost) {
     // 参照の準備
+
     const ctx = host.switchToHttp();
     const request: Request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
+    const isMyError = exception instanceof MyError;
+    console.log(exception);
 
-    const status =
-      exception instanceof MyError
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = isMyError
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
-      exception instanceof MyError
-        ? exception.message
-        : 'Internal Server Error';
-
-    const stack =
-      exception instanceof MyError
-        ? exception.stack
-        : 'Internal Server Error without MyError';
+    const message = isMyError ? exception.message : 'Internal Server Error';
+    const errorCode = isMyError
+      ? exception.error.errorCode.toString() + '\n'
+      : '';
+    const stack = isMyError
+      ? exception.stack
+      : 'Internal Server Error without MyError';
 
     const innerStack =
-      exception instanceof MyError && exception.error?.innerError
+      isMyError && exception.error?.innerError
         ? '\n' + exception.error.innerError.stack
         : '';
     // TODO: access.logに出せるようにする
@@ -56,7 +50,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const currentTime = getCurrentTime(request.headers['referer']);
     // ログを出力する
     const startLogEntry = `[${currentTime.toISOString()} ERROR] ${ip} "${request.method} ${request.url} HTTP/${request['httpVersion']}" ${status}`;
-    const logEntry = `${startLogEntry}\n${stack}`;
+    const logEntry = `${startLogEntry}\n${errorCode}${stack}`;
     fs.appendFileSync(this.logFilePath, logEntry + '\n', 'utf8');
 
     // レスポンスを返す

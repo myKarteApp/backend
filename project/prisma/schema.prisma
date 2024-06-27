@@ -13,6 +13,13 @@ datasource db {
   url      = env("DATABASE_ROOT_URL")
 }
 
+model LoginSession {
+  sessionId String @id
+  jwsToken String @db.MediumText
+  expiredAt DateTime
+  isDeleted Boolean @default(false)
+}
+
 enum AuthType {
   default
   google
@@ -30,6 +37,8 @@ model AuthInfo {
   password String
   authType AuthType
   authRole AuthRole @default(guest)
+
+  isDeleted Boolean @default(false)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 }
@@ -40,6 +49,7 @@ model AccountInfo {
   familyName String
   givenName String
 
+  isDeleted Boolean @default(false)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 }

@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
+
+import { HttpModule, HttpSessionService } from '@/domain/http';
+import { MainDatasourceModule } from '@/datasource';
 import { UserAuthDefaultService } from './UserAuthDefault.service';
 import { UserAuthDefaultController } from './UserAuthDefault.controller';
-import { MainDatasourceModule } from '@/datasource/mainDatasource.module';
 
 @Module({
-  imports: [MainDatasourceModule],
-  providers: [UserAuthDefaultService],
+  imports: [MainDatasourceModule, ...HttpModule.nestDi()],
+  providers: [UserAuthDefaultService, HttpSessionService],
   controllers: [UserAuthDefaultController],
 })
 export class UserAuthDefaultModule {}

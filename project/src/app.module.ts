@@ -1,15 +1,23 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MainDatasourceModule } from './datasource/mainDatasource.module';
-import { moduleList } from './routes';
+import { controllerModuleList } from './routes';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './filters/httpException.filter';
 import { LoggerMiddleware } from './middleware/logger.middleware';
+import * as cookieParser from 'cookie-parser';
+import { HttpModule } from './domain/http';
+import { JwsModule } from './domain/jws';
+import { MainDatasourceModule } from './datasource';
 
 @Module({
-  imports: [MainDatasourceModule.forRoot(), ...moduleList],
-  exports: [MainDatasourceModule],
+  imports: [
+    MainDatasourceModule,
+    HttpModule.forRoot(),
+    JwsModule.forRoot(),
+    ...controllerModuleList,
+  ],
+  exports: [MainDatasourceModule, HttpModule, JwsModule],
   controllers: [AppController],
   providers: [
     AppService,
@@ -21,6 +29,9 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(cookieParser())
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

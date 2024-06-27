@@ -1,6 +1,6 @@
-import { UserAuthDefaultModule } from './user/auth/default/UserAuthDefault.Module';
+import { UserAuthDefaultModule } from './user/auth/default';
 
-export const moduleList = [
+export const controllerModuleList = [
   /*
     POST /user/auth/default/create
     GET /user/auth/default/:authId

@@ -18,7 +18,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
   use(request: Request, res: Response, next: NextFunction) {
     const { referer } = request.headers;
-    if (!referer) throw Unexpected();
+    if (!referer) throw Unexpected('Error9');
     const startTime: Date = getCurrentTime(referer);
     const ip = request.headers['x-forwarded-for'];
 
