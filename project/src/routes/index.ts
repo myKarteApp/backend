@@ -1,12 +1,9 @@
-import { UserAuthDefaultModule } from './user/auth/default';
+import { RouteAuthModule } from './account/auth/RouteAuth.module';
+import { RouterAdminModule } from './account/roles/admin';
+import { RouteUserModule } from './account/user/RouteUser.module';
 
 export const controllerModuleList = [
-  /*
-    POST /user/auth/default/create
-    GET /user/auth/default/:authId
-    PUT /user/auth/default/:authId/update
-    PUT /user/auth/default/:authId/delete
-    GET /user/auth/default/
-  */
-  UserAuthDefaultModule,
+  RouterAdminModule,
+  RouteAuthModule,
+  RouteUserModule,
 ];

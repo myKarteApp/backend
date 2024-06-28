@@ -29,6 +29,23 @@ export class DefaultAuthDto {
   }
 }
 
+export enum SexType {
+  male = 'mail',
+  female = 'female',
+}
+
+export type UserInfoDto = {
+  authId: string;
+  birthDay: string;
+  sex: SexType;
+  gender: string;
+  familyName: string;
+  givenName: string;
+  address: string;
+  tel: string;
+  profession: string;
+};
+
 type AccountProps = LoginProps & {
   userId: string;
 };
@@ -53,3 +70,12 @@ export class AccountDto extends DefaultAuthDto {
     return false;
   }
 }
+
+export type JwsTokenSchema = {
+  payload: {
+    authId: string;
+  };
+  isExpired: boolean;
+};
+
+export type DefaultColumns = 'isDeleted' | 'createdAt' | 'updatedAt';

@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorCode, ErrorCodeKey } from './errorCode';
+import { ErrorCode } from './errorCode';
 
 type ErrorBody = {
   code: HttpStatus;
   status: string;
   message: string;
-  errorCode: number;
+  errorCode: ErrorCode;
   innerError?: Error;
 };
 
@@ -18,29 +18,38 @@ export class MyError extends HttpException {
   }
 }
 
-export const NotFound = (errorCodeKey: ErrorCodeKey) => {
+export const NotFound = (errorCode: ErrorCode) => {
   return new MyError({
     code: HttpStatus.NOT_FOUND,
     status: 'NotFound',
     message: 'NotFound',
-    errorCode: ErrorCode[errorCodeKey],
+    errorCode: errorCode,
   });
 };
 
-export const Unexpected = (errorCodeKey: ErrorCodeKey) => {
+export const Unexpected = (errorCode: ErrorCode) => {
   return new MyError({
     code: HttpStatus.EXPECTATION_FAILED,
     status: 'Unexpected',
     message: 'Unexpected',
-    errorCode: ErrorCode[errorCodeKey],
+    errorCode: errorCode,
   });
 };
 
-export const Disconnect = (errorCodeKey: ErrorCodeKey) => {
+export const Disconnect = (errorCode: ErrorCode) => {
   return new MyError({
     code: HttpStatus.INTERNAL_SERVER_ERROR,
     status: ' Disconnect',
-    message: 'Unexpected',
-    errorCode: ErrorCode[errorCodeKey],
+    message: 'Disconnect',
+    errorCode: errorCode,
+  });
+};
+
+export const Unauthorized = (errorCode: ErrorCode) => {
+  return new MyError({
+    code: HttpStatus.UNAUTHORIZED,
+    status: 'Unauthorized',
+    message: 'Unauthorized',
+    errorCode: errorCode,
   });
 };

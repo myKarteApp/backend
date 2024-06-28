@@ -1,6 +1,7 @@
 // logger.middleware.ts
 import { getCurrentTime } from '@/shared';
 import { Unexpected } from '@/utils/error';
+import { ErrorCode } from '@/utils/errorCode';
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
@@ -18,7 +19,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
   use(request: Request, res: Response, next: NextFunction) {
     const { referer } = request.headers;
-    if (!referer) throw Unexpected('Error9');
+    if (!referer) throw Unexpected(ErrorCode.Error16);
     const startTime: Date = getCurrentTime(referer);
     const ip = request.headers['x-forwarded-for'];
 

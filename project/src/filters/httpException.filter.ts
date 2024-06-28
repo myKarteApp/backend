@@ -42,8 +42,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       isMyError && exception.error?.innerError
         ? '\n' + exception.error.innerError.stack
         : '';
-    // TODO: access.logに出せるようにする
     console.log(innerStack);
+    // TODO: access.logに出せるようにする
     const ip = request.headers['x-forwarded-for'];
 
     // 時間の設定をする

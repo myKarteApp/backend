@@ -1,2 +1,3 @@
-export * from './Http.module';
-export * from './HttpSession.service';
+export * from './DomainHttp.module';
+export * from './HttpCookie.service';
+export * from './HttpCookieAuth.guard';

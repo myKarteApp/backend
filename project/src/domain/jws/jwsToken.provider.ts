@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { AuthInfo } from '@prisma/client';
+import { JwsTokenSchema } from '@/shared';
 
 @Injectable()
 export class JwsTokenProvider {
@@ -18,10 +19,7 @@ export class JwsTokenProvider {
     );
   }
 
-  decryptJwsToken(token: string): {
-    payload: AuthInfo;
-    isExpired: boolean;
-  } {
+  decryptJwsToken(token: string): JwsTokenSchema {
     const decodedToken = jwt.verify(token, this.privateKey);
     const expiresAt = new Date(decodedToken.exp * 1000);
     const currentDateTime = new Date();

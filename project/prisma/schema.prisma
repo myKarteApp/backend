@@ -13,22 +13,39 @@ datasource db {
   url      = env("DATABASE_ROOT_URL")
 }
 
-model LoginSession {
-  sessionId String @id
-  jwsToken String @db.MediumText
-  expiredAt DateTime
+// ===========================
+// API管理
+// ===========================
+
+// 指定のapiのInt <= リクエスト側のIntなら、アクセス可能とする
+model ApiAuthorization {
+  apiAuthorization String @id
+  name String
+  method String
+  endpoint String
+  authRole Int
+
   isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
+// ===========================
+// ログイン情報
+// ===========================
 
 enum AuthType {
   default
   google
 }
 
-enum AuthRole {
-  admin
-  super
-  guest
+model LoginSession {
+  sessionId String @id
+  jwsToken String @db.MediumText
+  expiredAt DateTime
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AuthInfo {
@@ -36,20 +53,270 @@ model AuthInfo {
   email String  @unique
   password String
   authType AuthType
-  authRole AuthRole @default(guest)
-
+  authRole Int
+  identityConfirmed Boolean @default(false)
+  isTrial Boolean @default(false)
   isDeleted Boolean @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model AccountInfo {
-  accountId String @id
-  authId Int @unique
+// [AutInfo 1 -- 0~* Triai]というケースがあるので注意
+model Trial {
+  trialId String @id
+  trialToken String @db.MediumText
+  authId String
+  expires DateTime
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===========================
+// アカウント情報
+// ===========================
+
+model UserInfo {
+  userId String @id
+  authId String
+  birthDay String
+  sex String // 身体の性別
+  gender String @default("")
   familyName String
   givenName String
+  address String
+  tel String
+
+  profession String @default("") // 職業
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===========================
+// ロール詳細
+// ===========================
+
+// 各種InfoとAuthInfoを紐づけて、使う
+
+model BusinessOwnerInfo {
+  bussinesOwnerId String @id
+  authId String // 代表者のIDになる
+  address String // ハガキを送りたいため
 
   isDeleted Boolean @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// [BusinessOwnerInfo 1 -- 1~* BusinessBranchInfo]
+model BusinessBranchInfo {
+  businessBranchId String @id
+  bussinesOwnerId String
+  branchName String // 本店も含まれる
+  authId String // 支店責任者のIDになる
+  address String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 以下のケースがあるので注意
+// [BusinessStaffInfo 1 -- 1~* BusinessBranchInfo]
+// NOTE: AuthIDで検索して複数ヒットするということは、複数の会社かつ複数の支店に所属しているということ。
+// ただし、それぞれのBusinessStaffInfoレコード詳細一致していない可能性があるので注意
+// BusinessStaffInfoの情報を更新するとき、authIdでヒットしたレコードをまとめて更新する
+
+model BusinessStaffInfo {
+  businessStaffId String @id
+  businessBranchId String
+  authId String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+// AuthInfo - UserInfo - ClientInfo (全て1多1)
+model ClientInfo {
+  clientId String @id
+  authId String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===========================
+// クライアント管理
+// ===========================
+
+// どのスタッフがどの顧客に接客したかを知りたい
+// 会社全体なら: BusinessStaffId, BusinessBranchId→bussinesOwnerId = target
+// 支店でなら:   BusinessStaffId, BusinessBranchId = target and BusinessBranchId→bussinesOwnerId = target
+model ClientVisitHistory {
+  clientVisitHistoryId String @id
+  // 誰が
+  authId String
+  // どの顧客に
+  clientId String
+  // どこで
+  businessBranchId String
+  // 実際にはどの時間帯で
+  visitedAt DateTime
+  leftAt DateTime? //来客した時点の作成段階では、決まっていないため、nullable
+  // 何のサービスを提供したか
+  temopraryReservationServiceManagementId String? //単純に寄るだけのケースもありうるため
+  serviceMasterId String? //単純に寄るだけのケースもありうるため
+
+  // 回数券の消化値
+  couponTicketsId String?
+  usePointOfCouponTickets Float?
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClientkarteHistory {
+  clientKarteHistoryId String @id
+  clientVisitHistoryId String
+  // これはmongoがいいかも
+  detail String
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===========================
+// 売り上げ管理
+// ===========================
+
+enum SettlementType {
+  cash
+  card
+}
+
+enum CurrencyType {
+  en
+}
+
+// 売上管理
+model SalesManagement {
+  salesManagementId String @id
+  salesDetailId String
+  businessBranchId String
+  businessStaffId String
+  paidAt DateTime? // nullなら、売掛
+  salesDay DateTime
+  currency CurrencyType @default(en)
+  settlement SettlementType
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 売れた商品
+model ItemSalesDetail {
+  itemSalesDetail String @id
+  salesManagementId String
+
+  // 誰が
+  authId String
+  // どの顧客に
+  clientId String
+  // どこで
+  businessBranchId String
+  // いくらで
+  excludeTax Boolean @default(false)
+  costWitoutTax Int // 税抜き価格。切り捨て
+  // いつ
+  salesDay DateTime
+  // 何を売ったか
+  itemMasterID String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+// 売れたサービス
+model ServiceSalesDetail {
+  serviceSalesDetail String @id
+  salesManagementId String
+
+  // 誰が
+  authId String
+  // どの顧客に
+  clientId String
+  // どこで
+  businessBranchId String
+  // いくらで
+  excludeTax Boolean @default(false)
+  costWitoutTax Int // 税抜き価格。切り捨て
+  // いつ
+  salesDay DateTime
+  // 何を売ったか
+  clientVisitHistoryId String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===========================
+// 予約
+// ===========================
+
+// 予約時点では、
+model TemporaryReservationServiceManagement {
+  temopraryReservationServiceManagementId String @id
+
+  // 実際に来客したかどうか
+  isExecuted Boolean @default(false)
+
+  // 誰が
+  authId String
+  // どの顧客に
+  clientId String
+  // どこで
+  businessBranchId String
+  // どの時間帯に
+  visitedAt DateTime
+  leftAt DateTime
+  // 何のサービスを提供するのか
+  serviceMasterID String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===========================
+// マスター商品
+// ===========================
+
+// 回数券をどう作るか？
+// サービス売上？接客履歴？どっちで紐つけるか？
+// - 回数券が売れる。この時点で売上が立つ
+// - そのあとは、サービス価格が回数分だけ0円になる
+// 結論: 売上０円を扱うのは変。接客履歴やわ。
+// でも、1時間圏*10を買った時、一回で2時間とか0.5時間の時は扱う？
+model ItemMaster {
+  itemMasterID String @id
+  bussinesOwnerId String
+  businessBranchId String? //nullならビジネスアカウント全体に適応される
+  authId String // 作った人
+  authRoleForUpdate Int @default(3)
+  excludeTax Boolean @default(false)
+  costWitoutTax Int // 税抜き価格。切り捨て
+}
+
+model ServiceMaster {
+  serviceMasterID String @id
+  bussinesOwnerId String
+  businessBranchId String? //nullならビジネスアカウント全体に適応される
+  authId String // 作った人
+  authRoleForUpdate Int @default(3)
+  excludeTax Boolean @default(false)
+  costWitoutTaxPerHour Int // 税抜き価格。切り捨て
 }

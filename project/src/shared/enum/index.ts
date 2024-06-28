@@ -5,9 +5,13 @@ export const AuthType = {
 
 export type AuthType = (typeof AuthType)[keyof typeof AuthType];
 
-export const AuthRole = {
-  default: 'default',
-  google: 'google',
-};
+export enum AuthRole {
+  admin = 1,
+  owner = 2,
+  branch = 3,
+  superStaff = 4,
+  staff = 5,
+  client = 6,
+}
 
-export type AuthRole = (typeof AuthRole)[keyof typeof AuthRole];
+// export type AuthRole = (typeof AuthRole)[keyof typeof AuthRole]

@@ -1,5 +1,5 @@
-import { DefaultAuthDto } from '../dto';
-import { AuthRole, AuthType } from '../enum';
+import { DefaultAuthDto, UserInfoDto } from '../dto';
+import { AuthType, AuthRole } from '../enum';
 
 export enum HttpMethod {
   GET = 'get',
@@ -10,10 +10,10 @@ export enum HttpMethod {
 
 export type ApiSchemaInfo = {
   /*
-    デフォルト認証型: /user/auth/default
+    デフォルト認証型: /auth/default
   */
-  createUserAuthDefault: {
-    endpoint: '/user/auth/default/create';
+  createAuthDefault: {
+    endpoint: '/account/auth/default/create';
     method: HttpMethod.POST;
     request: {
       body: DefaultAuthDto;
@@ -27,8 +27,8 @@ export type ApiSchemaInfo = {
       };
     };
   };
-  loginUserAuthDefault: {
-    endpoint: '/user/auth/default/login';
+  loginAuthDefault: {
+    endpoint: '/account/auth/default/login';
     method: HttpMethod.POST;
     request: {
       body: DefaultAuthDto;
@@ -42,8 +42,8 @@ export type ApiSchemaInfo = {
       };
     };
   };
-  logoutUserAuthDefault: {
-    endpoint: '/user/auth/default/:authId/logout';
+  logoutAuthDefault: {
+    endpoint: '/account/auth/default/:authId/logout';
     method: HttpMethod.POST;
     request: {
       body: never;
@@ -54,8 +54,31 @@ export type ApiSchemaInfo = {
       };
     };
   };
-  getUserAuthDefault: {
-    endpoint: '/user/auth/default/:authId';
+
+  /*
+    Crud: UserInfo
+  */
+  createUserInfo: {
+    endpoint: '/account/user/create';
+    method: HttpMethod.POST;
+    request: {
+      body: UserInfoDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          userId: string;
+        };
+      };
+    };
+  };
+
+  /*
+    Crud AccountInfo
+  */
+  getAccount: {
+    endpoint: '/:authId/account/:targetAuthId';
     method: HttpMethod.GET;
     request: {
       body: never;
@@ -72,8 +95,8 @@ export type ApiSchemaInfo = {
       };
     };
   };
-  getListOfUserAuthDefault: {
-    endpoint: '/user/auth/default';
+  getAccountList: {
+    endpoint: '/:authId/account';
     method: HttpMethod.GET;
     request: {
       body: never;
@@ -92,6 +115,41 @@ export type ApiSchemaInfo = {
       };
     };
   };
+
+  /*
+    Adminデフォルト認証型: /admin/auth/default
+  */
+  loginAdminAuthDefault: {
+    endpoint: '/admin/auth/default/login';
+    method: HttpMethod.POST;
+    request: {
+      body: DefaultAuthDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          authId: string;
+        };
+      };
+    };
+  };
+  logoutAdminAuthDefault: {
+    endpoint: '/admin/auth/default/:authId/logout';
+    method: HttpMethod.POST;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+
+  /*
+    Adminデフォルト認証型: /admin/auth/default
+  */
 };
 
 export type RequestBody<Action extends keyof ApiSchemaInfo> =
