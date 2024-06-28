@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DomainAuthModule } from './auth/DomainAuth.module';
+import { DomainAuthModule } from './roles/client/DomainClientAuth.module';
 import { DomainUserModel } from './user/DomainUser.module';
 
 @Module({

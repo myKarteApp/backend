@@ -2,32 +2,16 @@ export type ResponseOK = {
   message: string;
 };
 
-type LoginProps = {
+export type DefaultAuthDto = {
+  authId?: string; //作成時点ではnullでやってくる
   email: string;
   password: string;
+  //作成時点ではnullでやってくる
+  authType?: string;
+  authRole?: string;
+  identityConfirmed?: boolean;
+  isTrial?: boolean;
 };
-
-export class DefaultAuthDto {
-  public email: string;
-  public password: string;
-
-  constructor(props: LoginProps) {
-    this.email = props.email;
-    this.password = props.password;
-  }
-
-  public static getEmpty(): DefaultAuthDto {
-    return new DefaultAuthDto({
-      email: '',
-      password: '',
-    });
-  }
-
-  public isEmpty(): boolean {
-    if (this.email && this.password) return true;
-    return false;
-  }
-}
 
 export enum SexType {
   male = 'mail',
@@ -35,6 +19,7 @@ export enum SexType {
 }
 
 export type UserInfoDto = {
+  userId?: string; //作成時点ではnullでやってくる
   authId: string;
   birthDay: string;
   sex: SexType;
@@ -44,33 +29,10 @@ export type UserInfoDto = {
   address: string;
   tel: string;
   profession: string;
+  createdAt?: Date; //作成時点ではnullでやってくる
 };
 
-type AccountProps = LoginProps & {
-  userId: string;
-};
-
-export class AccountDto extends DefaultAuthDto {
-  public userId: string;
-  constructor(props: AccountProps) {
-    super(props);
-    this.userId = props.userId;
-  }
-
-  public static getEmpty(): AccountDto {
-    return new AccountDto({
-      userId: '',
-      email: '',
-      password: '',
-    });
-  }
-
-  public isEmpty(): boolean {
-    if (super.isEmpty() && this.userId) return true;
-    return false;
-  }
-}
-
+export type AccountInfoDto = Omit<DefaultAuthDto & UserInfoDto, 'password'>;
 export type JwsTokenSchema = {
   payload: {
     authId: string;

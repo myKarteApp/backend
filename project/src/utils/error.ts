@@ -53,3 +53,12 @@ export const Unauthorized = (errorCode: ErrorCode) => {
     errorCode: errorCode,
   });
 };
+
+export const BadRequest = (errorCode: ErrorCode) => {
+  return new MyError({
+    code: HttpStatus.BAD_REQUEST,
+    status: 'Bad Request',
+    message: 'Bad Request',
+    errorCode: errorCode,
+  });
+};

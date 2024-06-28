@@ -1,5 +1,4 @@
-import { DefaultAuthDto, UserInfoDto } from '../dto';
-import { AuthType, AuthRole } from '../enum';
+import { AccountInfoDto, DefaultAuthDto, UserInfoDto } from '../dto';
 
 export enum HttpMethod {
   GET = 'get',
@@ -77,8 +76,8 @@ export type ApiSchemaInfo = {
   /*
     Crud AccountInfo
   */
-  getAccount: {
-    endpoint: '/:authId/account/:targetAuthId';
+  getClientInfo: {
+    endpoint: '/:authId/client/:targetAuthId';
     method: HttpMethod.GET;
     request: {
       body: never;
@@ -87,16 +86,13 @@ export type ApiSchemaInfo = {
       200: {
         message: string;
         data: {
-          authId: string;
-          email: string;
-          authType: AuthType;
-          authRole: AuthRole;
+          accountInfo: AccountInfoDto;
         };
       };
     };
   };
-  getAccountList: {
-    endpoint: '/:authId/account';
+  getClientInfoListByAdmin: {
+    endpoint: '/admin/:authId/client';
     method: HttpMethod.GET;
     request: {
       body: never;
@@ -105,12 +101,7 @@ export type ApiSchemaInfo = {
       200: {
         message: string;
         data: {
-          authList: {
-            authId: string;
-            email: string;
-            authType: AuthType;
-            authRole: AuthRole;
-          };
+          accountInfoList: AccountInfoDto[];
         };
       };
     };

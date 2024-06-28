@@ -28,17 +28,20 @@ export class DomainAuthDefaultProvider {
   */
   public async findById(
     authId: string,
-    authType: AuthType,
-    authRole: AuthRole,
+    authType?: AuthType,
+    authRole?: AuthRole,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
+    const where = {
+      authId: authId,
+      isDeleted: false,
+    };
+
+    if (authType) where['authType'] = authType;
+    if (authRole) where['authRole'] = authRole;
+
     return this.connect(_connect).authInfo.findUnique({
-      where: {
-        authId: authId,
-        authType: authType,
-        authRole: authRole,
-        isDeleted: false,
-      },
+      where: where,
     });
   }
 

@@ -34,10 +34,6 @@ model ApiAuthorization {
 // ログイン情報
 // ===========================
 
-enum AuthType {
-  default
-  google
-}
 
 model LoginSession {
   sessionId String @id
@@ -46,6 +42,11 @@ model LoginSession {
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum AuthType {
+  default
+  google
 }
 
 model AuthInfo {
@@ -86,8 +87,8 @@ model UserInfo {
   givenName String
   address String
   tel String
-
   profession String @default("") // 職業
+
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,7 +101,7 @@ model UserInfo {
 // 各種InfoとAuthInfoを紐づけて、使う
 
 model BusinessOwnerInfo {
-  bussinesOwnerId String @id
+  bussinessOwnerId String @id
   authId String // 代表者のIDになる
   address String // ハガキを送りたいため
 
@@ -112,7 +113,7 @@ model BusinessOwnerInfo {
 // [BusinessOwnerInfo 1 -- 1~* BusinessBranchInfo]
 model BusinessBranchInfo {
   businessBranchId String @id
-  bussinesOwnerId String
+  bussinessOwnerId String
   branchName String // 本店も含まれる
   authId String // 支店責任者のIDになる
   address String
@@ -128,6 +129,7 @@ model BusinessBranchInfo {
 // ただし、それぞれのBusinessStaffInfoレコード詳細一致していない可能性があるので注意
 // BusinessStaffInfoの情報を更新するとき、authIdでヒットしたレコードをまとめて更新する
 
+// staffとsuperStaffがあるので注意
 model BusinessStaffInfo {
   businessStaffId String @id
   businessBranchId String
@@ -151,16 +153,35 @@ model ClientInfo {
 // クライアント管理
 // ===========================
 
+// 顧客が登録時点で、作成できる。
+model ClientManagement {
+  clientManagementId String @id
+  // どの顧客が
+  clientId String
+  // どこで
+  bussinessOwnerId String
+  businessBranchId String
+
+  // どの担当から接客を受けたか
+  // admin,owener, branch, staff, superStaff全員の可能性がある
+  authId String
+
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // どのスタッフがどの顧客に接客したかを知りたい
-// 会社全体なら: BusinessStaffId, BusinessBranchId→bussinesOwnerId = target
-// 支店でなら:   BusinessStaffId, BusinessBranchId = target and BusinessBranchId→bussinesOwnerId = target
+// 会社全体なら: BusinessStaffId, BusinessBranchId→bussinessOwnerId = target
+// 支店でなら:   BusinessStaffId, BusinessBranchId = target and BusinessBranchId→bussinessOwnerId = target
 model ClientVisitHistory {
   clientVisitHistoryId String @id
   // 誰が
-  authId String
+  businessStaffId String
   // どの顧客に
   clientId String
   // どこで
+  bussinessOwnerId String
   businessBranchId String
   // 実際にはどの時間帯で
   visitedAt DateTime
@@ -303,7 +324,7 @@ model TemporaryReservationServiceManagement {
 // でも、1時間圏*10を買った時、一回で2時間とか0.5時間の時は扱う？
 model ItemMaster {
   itemMasterID String @id
-  bussinesOwnerId String
+  bussinessOwnerId String
   businessBranchId String? //nullならビジネスアカウント全体に適応される
   authId String // 作った人
   authRoleForUpdate Int @default(3)
@@ -313,7 +334,7 @@ model ItemMaster {
 
 model ServiceMaster {
   serviceMasterID String @id
-  bussinesOwnerId String
+  bussinessOwnerId String
   businessBranchId String? //nullならビジネスアカウント全体に適応される
   authId String // 作った人
   authRoleForUpdate Int @default(3)
