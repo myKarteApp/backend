@@ -13,7 +13,7 @@ import {
 } from '@/domain/account/auth';
 
 @Injectable({ scope: Scope.REQUEST })
-export class AuthDefaultService {
+export class AuthVerifyService {
   constructor(
     protected readonly datasource: MainDatasourceProvider,
     private readonly authDefaultProvider: DomainAuthDefaultProvider,
@@ -21,38 +21,18 @@ export class AuthDefaultService {
   ) {
     this.authDefaultProvider.datasource = datasource;
   }
-  /*
-    create
-  */
-  public async createAuthInfo(
-    dto: DefaultAuthDto,
-    newAuthId: string,
-    _connect?: PrismaClient,
-  ): Promise<void> {
-    await this.authDefaultProvider.createAuthInfo(
-      {
-        authId: newAuthId,
-        email: dto.email,
-        password: dto.password,
-        authType: AuthType.default,
-        authRole: AuthRole.client,
-        isVerify: false,
-      },
-      _connect,
-    );
-  }
 
-  /*
-    read
-  */
-  public async findById(
+  /* ==================
+    AuthInfo
+  ================== */
+  public async findAuthInfoById(
     authId: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
     return this.authDefaultProvider.findById(
       authId,
-      AuthType.default,
-      AuthRole.client,
+      undefined,
+      undefined,
       _connect,
     );
   }
@@ -69,20 +49,32 @@ export class AuthDefaultService {
     );
   }
 
-  public async createOneTimePass(
+  public async verifyAuthInfo(
     authId: string,
     _connect?: PrismaClient,
-  ): Promise<string> {
-    return this.authVerifyOneTimePassProvider.create(authId, _connect);
+  ): Promise<AuthInfo | null> {
+    return this.authDefaultProvider.verifyAuthInfo(authId, _connect);
   }
+  /* =================
+  OneTimePass
+  ================= */
 
-  public async findOneTimePassById(
-    authVerifyOneTimePassId: string,
+  public async findByQueryToken(
+    queryToken: string,
     _connect?: PrismaClient,
   ): Promise<AuthVerifyOneTimePass | null> {
-    return this.authVerifyOneTimePassProvider.findById(
-      authVerifyOneTimePassId,
+    return this.authVerifyOneTimePassProvider.findByQueryToken(
+      queryToken,
       _connect,
     );
   }
+  // public async findOneTimePassById(
+  //   authVerifyOneTimePassId: string,
+  //   _connect?: PrismaClient,
+  // ): Promise<AuthVerifyOneTimePass | null> {
+  //   return this.authVerifyOneTimePassProvider.findById(
+  //     authVerifyOneTimePassId,
+  //     _connect,
+  //   );
+  // }
 }

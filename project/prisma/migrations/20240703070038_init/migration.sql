@@ -31,6 +31,7 @@ CREATE TABLE `AuthInfo` (
     `password` VARCHAR(191) NOT NULL,
     `authType` ENUM('default', 'google') NOT NULL,
     `authRole` INTEGER NOT NULL,
+    `isVerify` BOOLEAN NOT NULL DEFAULT false,
     `isTrial` BOOLEAN NOT NULL DEFAULT false,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -38,6 +39,20 @@ CREATE TABLE `AuthInfo` (
 
     UNIQUE INDEX `AuthInfo_email_key`(`email`),
     PRIMARY KEY (`authId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `AuthVerifyOneTimePass` (
+    `authVerifyOneTimePassId` VARCHAR(191) NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
+    `queryToken` VARCHAR(191) NOT NULL,
+    `passCode` VARCHAR(191) NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`authVerifyOneTimePassId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -55,8 +70,8 @@ CREATE TABLE `Trial` (
 
 -- CreateTable
 CREATE TABLE `UserInfo` (
-    `UserId` VARCHAR(191) NOT NULL,
-    `authId` INTEGER NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
     `birthDay` VARCHAR(191) NOT NULL,
     `sex` VARCHAR(191) NOT NULL,
     `gender` VARCHAR(191) NOT NULL DEFAULT '',
@@ -69,35 +84,32 @@ CREATE TABLE `UserInfo` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `UserInfo_authId_key`(`authId`),
-    PRIMARY KEY (`UserId`)
+    PRIMARY KEY (`userId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `BusinessOwnerInfo` (
-    `bussinesOwnerId` VARCHAR(191) NOT NULL,
-    `authId` INTEGER NOT NULL,
+    `bussinessOwnerId` VARCHAR(191) NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `BusinessOwnerInfo_authId_key`(`authId`),
-    PRIMARY KEY (`bussinesOwnerId`)
+    PRIMARY KEY (`bussinessOwnerId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `BusinessBranchInfo` (
     `businessBranchId` VARCHAR(191) NOT NULL,
-    `bussinesOwnerId` VARCHAR(191) NOT NULL,
+    `bussinessOwnerId` VARCHAR(191) NOT NULL,
     `branchName` VARCHAR(191) NOT NULL,
-    `authId` INTEGER NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `BusinessBranchInfo_authId_key`(`authId`),
     PRIMARY KEY (`businessBranchId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -105,7 +117,7 @@ CREATE TABLE `BusinessBranchInfo` (
 CREATE TABLE `BusinessStaffInfo` (
     `businessStaffId` VARCHAR(191) NOT NULL,
     `businessBranchId` VARCHAR(191) NOT NULL,
-    `authId` INTEGER NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -116,7 +128,7 @@ CREATE TABLE `BusinessStaffInfo` (
 -- CreateTable
 CREATE TABLE `ClientInfo` (
     `clientId` VARCHAR(191) NOT NULL,
-    `authId` INTEGER NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -125,10 +137,25 @@ CREATE TABLE `ClientInfo` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `ClientManagement` (
+    `clientManagementId` VARCHAR(191) NOT NULL,
+    `clientId` VARCHAR(191) NOT NULL,
+    `bussinessOwnerId` VARCHAR(191) NOT NULL,
+    `businessBranchId` VARCHAR(191) NOT NULL,
+    `authId` VARCHAR(191) NOT NULL,
+    `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`clientManagementId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `ClientVisitHistory` (
     `clientVisitHistoryId` VARCHAR(191) NOT NULL,
-    `authId` VARCHAR(191) NOT NULL,
+    `businessStaffId` VARCHAR(191) NOT NULL,
     `clientId` VARCHAR(191) NOT NULL,
+    `bussinessOwnerId` VARCHAR(191) NOT NULL,
     `businessBranchId` VARCHAR(191) NOT NULL,
     `visitedAt` DATETIME(3) NOT NULL,
     `leftAt` DATETIME(3) NULL,
@@ -228,7 +255,7 @@ CREATE TABLE `TemporaryReservationServiceManagement` (
 -- CreateTable
 CREATE TABLE `ItemMaster` (
     `itemMasterID` VARCHAR(191) NOT NULL,
-    `bussinesOwnerId` VARCHAR(191) NOT NULL,
+    `bussinessOwnerId` VARCHAR(191) NOT NULL,
     `businessBranchId` VARCHAR(191) NULL,
     `authId` VARCHAR(191) NOT NULL,
     `authRoleForUpdate` INTEGER NOT NULL DEFAULT 3,
@@ -241,7 +268,7 @@ CREATE TABLE `ItemMaster` (
 -- CreateTable
 CREATE TABLE `ServiceMaster` (
     `serviceMasterID` VARCHAR(191) NOT NULL,
-    `bussinesOwnerId` VARCHAR(191) NOT NULL,
+    `bussinessOwnerId` VARCHAR(191) NOT NULL,
     `businessBranchId` VARCHAR(191) NULL,
     `authId` VARCHAR(191) NOT NULL,
     `authRoleForUpdate` INTEGER NOT NULL DEFAULT 3,

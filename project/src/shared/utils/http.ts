@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export enum TimezoneOffset {
   UTC = 0,
   JST = 9,
@@ -33,8 +35,15 @@ export function getOffsetByName(name: string): number | undefined {
   return key ? TimezoneOffset[key] : undefined;
 }
 
-export function getCurrentTime(referer: string): Date {
-  const queryParams = getQueryParams(referer);
+export function getCurrentTimeFromRequest(request: Request): Date {
+  let queryParams: { [key: string]: any } = {};
+  const { referer } = request.headers;
+  if (referer) {
+    queryParams = getQueryParams(referer);
+  } else {
+    queryParams = request.query;
+  }
+
   const { tz } = queryParams;
   let offset: number | undefined = 0;
   const utcNow = new Date();

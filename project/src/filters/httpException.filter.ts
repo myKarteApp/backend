@@ -8,7 +8,8 @@ import {
 import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
-import { getCurrentTime } from '@/shared';
+import { getCurrentTimeFromRequest } from '@/shared';
+import { Request } from 'express';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -26,6 +27,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const isMyError = exception instanceof MyError;
     console.log(exception);
 
+    /*
+      エラー内容を抽出する
+    */
     const status = isMyError
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
@@ -43,20 +47,32 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? '\n' + exception.error.innerError.stack
         : '';
     console.log(innerStack);
+
+    const errorData =
+      isMyError && exception.data ? '\n' + exception.data : undefined;
+
+    /*
+      エラーのログを出す
+    */
+
     // TODO: access.logに出せるようにする
     const ip = request.headers['x-forwarded-for'];
 
     // 時間の設定をする
-    const currentTime = getCurrentTime(request.headers['referer']);
+    const currentTime = getCurrentTimeFromRequest(request);
     // ログを出力する
     const startLogEntry = `[${currentTime.toISOString()} ERROR] ${ip} "${request.method} ${request.url} HTTP/${request['httpVersion']}" ${status}`;
     const logEntry = `${startLogEntry}\n${errorCode}${stack}`;
     fs.appendFileSync(this.logFilePath, logEntry + '\n', 'utf8');
 
-    // レスポンスを返す
-    // TODO: logEntryを外部に飛ばして保存する
+    /*
+      レスポンスを返す
+    */
+
+    // TODO: logEntryを外部(プロキシーのstaticでいいかな)に飛ばして保存する
     response.status(status).json({
       error: message,
+      data: errorData,
     });
   }
 }

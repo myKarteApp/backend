@@ -1,7 +1,7 @@
 import { DefaultAuthDto } from '@/shared/dto';
 import { Body, Controller, Post, Req, Res } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { NotFound } from '@/utils/error';
+import { AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
+import { NotFound, Unexpected } from '@/utils/error';
 import { v4 } from 'uuid';
 import {
   Request as ExpressRequest,
@@ -15,20 +15,46 @@ import { MainDatasourceProvider } from '@/datasource';
 import { ErrorCode } from '@/utils/errorCode';
 import { SpecLoginController } from '@/spec/SpecLogin.Controller';
 import { AuthDefaultService } from './AuthDefault.service';
+import { MailService } from '@/domain/mail/mail.service';
+import { ApiTags, ApiBody } from '@nestjs/swagger';
+import { _DefaultAuthDto } from './swaggerDto';
 
+@ApiTags('AuthDefault')
 @Controller('/account/auth/default')
 export class AuthDefaultController implements SpecLoginController {
   constructor(
     private readonly authService: AuthDefaultService,
     private readonly datasource: MainDatasourceProvider,
     private readonly cookieService: HttpCookieService,
+    private readonly mailService: MailService,
   ) {}
 
+  @ApiBody({ type: _DefaultAuthDto })
   @Post('create')
   async create(@Body() dto: DefaultAuthDto, @Res() response: ExpressResponse) {
     const newAuthId = v4();
     await this.datasource.transact(async (connect: PrismaClient) => {
+      // 認証情報を作成する
       await this.authService.createAuthInfo(dto, newAuthId, connect);
+
+      // OTPを保存する
+      const authVerifyOneTimePassId = await this.authService.createOneTimePass(
+        newAuthId,
+        connect,
+      );
+      const authVerifyOneTimePass: AuthVerifyOneTimePass | null =
+        await this.authService.findOneTimePassById(
+          authVerifyOneTimePassId,
+          connect,
+        );
+      if (!authVerifyOneTimePass) throw Unexpected(ErrorCode.Error27);
+
+      // 本人確認用のメールを送信する
+      await this.mailService.sendTemporaryRegistration(
+        dto.email,
+        authVerifyOneTimePass.passCode,
+        authVerifyOneTimePass.queryToken,
+      );
     });
 
     const responseBody: ResponseBody<'createAuthDefault'> = {
@@ -40,41 +66,7 @@ export class AuthDefaultController implements SpecLoginController {
     response.status(200).json(responseBody);
   }
 
-  // @Get(':authId')
-  // async read(
-  //   @Param('authId') authId: string,
-  //   @Req() request: ExpressRequest,
-  //   @Res() response: ExpressResponse,
-  // ) {
-  //   const sessionId = request.cookies[this.cookieService.loginSessionKey];
-  //   if (!sessionId) throw NotFound(ErrorCode.Error12);
-
-  //   const authInfo = await this.datasource.transact(
-  //     async (connect: PrismaClient) => {
-  //       await this.cookieService.validateLoginSession(
-  //         authId,
-  //         sessionId,
-  //         connect,
-  //       );
-  //       return this.authService.findById(authId, connect);
-  //     },
-  //   );
-  //   await this.cookieService.validateLoginSession(authId, sessionId);
-
-  //   if (!authInfo) throw NotFound(ErrorCode.Error13);
-
-  //   const responseBody: ResponseBody<'getUserAuthDefault'> = {
-  //     message: 'OK',
-  //     data: {
-  //       authId: authInfo.authId,
-  //       email: authInfo.email,
-  //       authType: authInfo.authType,
-  //       authRole: authInfo.authRole,
-  //     },
-  //   };
-  //   response.status(200).json(responseBody);
-  // }
-
+  @ApiBody({ type: _DefaultAuthDto })
   @Post('login')
   async login(
     @Body() dto: DefaultAuthDto,

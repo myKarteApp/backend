@@ -29,13 +29,11 @@ export abstract class SpecDatasourceProvider {
     callback: (connect: PrismaClient) => Promise<T>,
   ): Promise<T> {
     try {
-      console.log('== connect: start ===');
       await this.setConnect();
       return this.connect.$transaction(async (connect: PrismaClient) => {
         return await callback(connect);
       });
     } catch (error) {
-      console.log(error);
       if (error instanceof MyError) throw error;
       throw new MyError({
         code: HttpStatus.EXPECTATION_FAILED,
@@ -45,7 +43,6 @@ export abstract class SpecDatasourceProvider {
         errorCode: ErrorCode.Error17,
       });
     } finally {
-      console.log('== connect: end ===');
       await this.connect.$disconnect();
     }
   }

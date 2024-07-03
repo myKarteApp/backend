@@ -6,11 +6,16 @@ export type DefaultAuthDto = {
   authId?: string; //作成時点ではnullでやってくる
   email: string;
   password: string;
-  //作成時点ではnullでやってくる
   authType?: string;
   authRole?: string;
   identityConfirmed?: boolean;
   isTrial?: boolean;
+};
+
+export type RegisterDto = {
+  email: string;
+  password: string;
+  queryToken: string;
 };
 
 export enum SexType {
@@ -21,7 +26,7 @@ export enum SexType {
 export type UserInfoDto = {
   userId?: string; //作成時点ではnullでやってくる
   authId: string;
-  birthDay: string;
+  birthDay: Date;
   sex: SexType;
   gender: string;
   familyName: string;
@@ -32,7 +37,13 @@ export type UserInfoDto = {
   createdAt?: Date; //作成時点ではnullでやってくる
 };
 
-export type AccountInfoDto = Omit<DefaultAuthDto & UserInfoDto, 'password'>;
+export type AccountInfoDto = Omit<
+  DefaultAuthDto & UserInfoDto,
+  'authId' | 'password'
+>;
+export type ClientInfoDto = Omit<AccountInfoDto, 'userId'> & {
+  clientId: string;
+};
 export type JwsTokenSchema = {
   payload: {
     authId: string;

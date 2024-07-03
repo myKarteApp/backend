@@ -73,6 +73,22 @@ export class DomainAuthDefaultProvider {
     // bcryptを使用して平文のパスワードをハッシュ化されたパスワードと比較する
     return bcrypt.compare(plainPassword, hashedPassword);
   }
+  /*
+    update
+  */
+  public async verifyAuthInfo(
+    authId: string,
+    _connect?: PrismaClient,
+  ): Promise<AuthInfo | null> {
+    return this.connect(_connect).authInfo.update({
+      data: {
+        isVerify: true,
+      },
+      where: {
+        authId: authId,
+      },
+    });
+  }
 
   /*
     other

@@ -55,8 +55,19 @@ model AuthInfo {
   password String
   authType AuthType
   authRole Int
-  identityConfirmed Boolean @default(false)
+  isVerify Boolean @default(false) //本人確認フラグ
   isTrial Boolean @default(false)
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuthVerifyOneTimePass {
+  authVerifyOneTimePassId String @id
+  authId String
+  queryToken String
+  passCode String
+  expiresAt DateTime
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -80,7 +91,7 @@ model Trial {
 model UserInfo {
   userId String @id
   authId String
-  birthDay String
+  birthDay DateTime
   sex String // 身体の性別
   gender String @default("")
   familyName String
