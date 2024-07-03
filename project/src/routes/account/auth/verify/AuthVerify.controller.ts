@@ -1,24 +1,18 @@
+import { Body, Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
 import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Render,
-  Req,
-  Res,
-} from '@nestjs/common';
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
-import * as csurf from 'csurf';
-
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
 import { MainDatasourceProvider } from '@/datasource';
 
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { NotFound, Unexpected } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
-import { RegisterDto, ResponseBody } from '@/shared';
+import { CSRF_HEADER, RegisterDto, ResponseBody } from '@/shared';
 import { AuthVerifyService } from './AuthVerify.service';
 import { AuthInfo, AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
+import { CsrfSessionProvider } from '@/domain/http/CsrfSession.provider';
+import { _RegisterDto } from './swaggerDto';
 
 @ApiTags('AuthVerify')
 @Controller('/account/auth/verify')
@@ -26,35 +20,33 @@ export class AuthVerifyController {
   constructor(
     private readonly datasource: MainDatasourceProvider,
     private readonly authVerifyService: AuthVerifyService,
+    private readonly csrfSessionProvider: CsrfSessionProvider,
   ) {}
 
   @Get('')
   async confirmRegistration(
     @Query('queryToken') queryToken: string,
-    @Req() request,
+    @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
   ) {
     try {
-      request.session;
       const appDomain = process.env.APP_DOMAIN;
       if (!appDomain) throw Unexpected(ErrorCode.Error28);
       await this.datasource.transact(async (connect: PrismaClient) => {
-        /* トークンの有効性を確認する
-            - トークンが有効期限切れ
-            - 対象の認証情報が有効化済み
-          */
+        // トークンの期限は有効であるか？
         const oneTimePass: AuthVerifyOneTimePass | null =
           await this.authVerifyService.findByQueryToken(queryToken, connect);
         if (!oneTimePass) throw NotFound(ErrorCode.Error16);
         if ((oneTimePass.expiresAt = new Date()))
           throw NotFound(ErrorCode.Error29);
 
-        // 認証情報を取得する
+        // 認証情報が未認証であるか？
         const authInfo: AuthInfo | null =
           await this.authVerifyService.findAuthInfoById(oneTimePass.authId);
         if (!authInfo) throw NotFound(ErrorCode.Error30);
         if (authInfo.isVerify) throw NotFound(ErrorCode.Error31);
       });
+      const csrfToken = this.csrfSessionProvider.setCsrfToken(request);
 
       const html = `
         <!DOCTYPE html>
@@ -84,8 +76,6 @@ export class AuthVerifyController {
                 <input type="text" name="passCode" id="passCode" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               </div>
               <input type='hidden' name='queryToken' value='${queryToken}' id='queryToken'/>
-              <input type='hidden' name='_csrf' value='${request.csrfToken()}' id='_csrf'/>
-
               <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                 送信
               </button>
@@ -106,7 +96,11 @@ export class AuthVerifyController {
                 $.ajax({
                   type: 'POST',
                   url: "https://${appDomain}/api/account/auth/verify",
-                  data: formData,
+                  // data: formData,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    '${CSRF_HEADER}': '${csrfToken}',
+                  },
                   success: function(response) {
                     alert('本登録できました！');
                     window.location.href = "https://${appDomain}";
@@ -128,9 +122,16 @@ export class AuthVerifyController {
       throw error;
     }
   }
+
+  @ApiBody({ type: _RegisterDto })
   @Post('')
-  async register(@Body() dto: RegisterDto, @Res() response: ExpressResponse) {
+  async register(
+    @Body() dto: RegisterDto,
+    @Req() request: ExpressRequest,
+    @Res() response: ExpressResponse,
+  ) {
     await this.datasource.transact(async (connect: PrismaClient) => {
+      this.csrfSessionProvider.verifyCsrfToken(request);
       // 認証情報の確認をする
       const authInfo = await this.authVerifyService.findByEmail(dto, connect);
       if (!authInfo) throw NotFound(ErrorCode.Error32);

@@ -52,8 +52,7 @@ export class AdminAuthDefaultController {
     @Res() response: ExpressResponse,
   ) {
     await this.datasource.transact(async (connect: PrismaClient) => {
-      const sessionId =
-        request.cookies[this.authCookieProvider.sessionKey];
+      const sessionId = request.cookies[this.authCookieProvider.sessionKey];
       if (!sessionId) return;
       await this.authCookieProvider.clearAuthSessionId(
         response,

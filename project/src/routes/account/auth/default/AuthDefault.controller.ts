@@ -21,6 +21,7 @@ import { _DefaultAuthDto } from './swaggerDto';
 
 @ApiTags('AuthDefault')
 @Controller('/account/auth/default')
+// extends PassportSerializer
 export class AuthDefaultController implements SpecLoginController {
   constructor(
     private readonly authService: AuthDefaultService,
@@ -104,8 +105,7 @@ export class AuthDefaultController implements SpecLoginController {
     @Res() response: ExpressResponse,
   ): Promise<void> {
     await this.datasource.transact(async (connect: PrismaClient) => {
-      const sessionId =
-        request.cookies[this.authCookieProvider.sessionKey];
+      const sessionId = request.cookies[this.authCookieProvider.sessionKey];
       if (!sessionId) return;
       await this.authCookieProvider.clearAuthSessionId(
         response,

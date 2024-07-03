@@ -15,6 +15,7 @@ export type DefaultAuthDto = {
 export type RegisterDto = {
   email: string;
   password: string;
+  passCode: string;
   queryToken: string;
 };
 

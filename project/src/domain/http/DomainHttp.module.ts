@@ -3,14 +3,14 @@ import { MainDatasourceModule } from '@/datasource';
 import { DomainJwsModule, JwsTokenProvider } from '../jws';
 import { AuthCookieProvider } from './AuthCookie.provider';
 import { HttpCookieAuthGuard } from './HttpCookieAuth.guard';
-import { CsrfCookieProvider } from './CsrfCookie.provider';
+import { CsrfSessionProvider } from './CsrfSession.provider';
 
 @Module({
   imports: [MainDatasourceModule, DomainJwsModule],
-  exports: [AuthCookieProvider, CsrfCookieProvider],
+  exports: [AuthCookieProvider, CsrfSessionProvider],
   providers: [
     AuthCookieProvider,
-    CsrfCookieProvider,
+    CsrfSessionProvider,
     JwsTokenProvider,
     HttpCookieAuthGuard,
   ],

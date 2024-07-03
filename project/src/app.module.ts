@@ -8,6 +8,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import * as cookieParser from 'cookie-parser';
 import { AdminDatasourceModule, MainDatasourceModule } from './datasource';
 import { DomainModule } from './domain/domain.module';
+import * as csurf from 'csurf';
 
 const moduleList = [
   DomainModule,
@@ -34,5 +35,10 @@ export class AppModule {
       .apply(cookieParser())
       .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer.apply(LoggerMiddleware).forRoutes('*');
+
+    consumer
+      .apply(csurf({ ignoreMethods: ['GET', 'HEAD', 'OPTIONS'] }))
+      .exclude({ path: 'account/auth/verify', method: RequestMethod.GET })
+      .forRoutes('*');
   }
 }
