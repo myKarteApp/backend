@@ -38,7 +38,11 @@ export class AppModule {
 
     consumer
       .apply(csurf({ ignoreMethods: ['GET', 'HEAD', 'OPTIONS'] }))
-      .exclude({ path: 'account/auth/verify', method: RequestMethod.GET })
+      .exclude(
+        { path: 'account/auth/verify', method: RequestMethod.GET },
+        { path: 'account/auth/default/create', method: RequestMethod.POST },
+        { path: 'account/auth/default/login', method: RequestMethod.POST },
+      )
       .forRoutes('*');
   }
 }

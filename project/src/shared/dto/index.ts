@@ -1,3 +1,8 @@
+// import { z } from 'zod';
+
+import { AuthRole, AuthType } from '../enum';
+import { Validator } from '../utils/error';
+
 export type ResponseOK = {
   message: string;
 };
@@ -12,11 +17,54 @@ export type DefaultAuthDto = {
   isTrial?: boolean;
 };
 
+export const validateDefaultAuthDto = (dto: DefaultAuthDto): Validator => {
+  const validator = new Validator();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dto.email))
+    validator.pushError('email', 'emailを正しく入力しください。');
+  if (Object.keys(dto.password).length < 8)
+    validator.pushError('password', '8文字以上で記載してください。');
+
+  if (dto.authType) {
+    const authType = Object.keys(AuthType).filter((key) =>
+      isNaN(Number(AuthType[key])),
+    );
+    if (!authType.includes(dto.authType))
+      validator.pushError('authType', '認証形式が不正です。');
+  }
+  if (dto.authRole) {
+    const authRole = Object.keys(AuthRole).filter((key) =>
+      isNaN(Number(AuthRole[key])),
+    );
+    if (!authRole.includes(dto.authRole))
+      validator.pushError('authRoles', '認可が不正です。');
+  }
+  return validator;
+};
+
 export type RegisterDto = {
   email: string;
   password: string;
   passCode: string;
   queryToken: string;
+};
+
+export const validateRegisterDto = (dto: RegisterDto): Validator => {
+  const validator = new Validator();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dto.email))
+    validator.pushError('email', 'emailを正しく入力しください。');
+  if (Object.keys(dto.password).length < 8)
+    validator.pushError(
+      'password',
+      'パスワードは8文字以上で記載してください。',
+    );
+  if (Object.keys(dto.passCode).length !== 6)
+    validator.pushError(
+      'passCode',
+      'パスコードは6文字以上で記載してください。',
+    );
+  if (Object.keys(dto.queryToken).length === 0)
+    validator.pushError('queryToken', '不正な操作が行われました。');
+  return validator;
 };
 
 export enum SexType {

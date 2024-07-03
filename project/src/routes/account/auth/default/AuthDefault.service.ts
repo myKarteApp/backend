@@ -11,6 +11,7 @@ import {
   DomainAuthDefaultProvider,
   DomainAuthVerifyOneTimePassProvider,
 } from '@/domain/account/auth';
+import { Request as ExpressRequest } from 'express';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthDefaultService {
@@ -71,9 +72,10 @@ export class AuthDefaultService {
 
   public async createOneTimePass(
     authId: string,
+    request: ExpressRequest,
     _connect?: PrismaClient,
   ): Promise<string> {
-    return this.authVerifyOneTimePassProvider.create(authId, _connect);
+    return this.authVerifyOneTimePassProvider.create(authId, request, _connect);
   }
 
   public async findOneTimePassById(

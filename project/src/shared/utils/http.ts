@@ -1,5 +1,3 @@
-import { Request } from 'express';
-
 export enum TimezoneOffset {
   UTC = 0,
   JST = 9,
@@ -35,7 +33,7 @@ export function getOffsetByName(name: string): number | undefined {
   return key ? TimezoneOffset[key] : undefined;
 }
 
-export function getCurrentTimeFromRequest(request: Request): Date {
+export function getCurrentTimeFromRequest(request: any): Date {
   let queryParams: { [key: string]: any } = {};
   const { referer } = request.headers;
   if (referer) {

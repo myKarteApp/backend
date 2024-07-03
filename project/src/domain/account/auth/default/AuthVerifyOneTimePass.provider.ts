@@ -3,6 +3,8 @@ import { AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { v4 } from 'uuid';
 import { ONE_TIME_PASS_EXPIRATION } from '@/config';
+import { Request as ExpressRequest } from 'express';
+import { getCurrentTimeFromRequest } from '@/shared';
 
 @Injectable({ scope: Scope.REQUEST })
 export class DomainAuthVerifyOneTimePassProvider {
@@ -12,17 +14,19 @@ export class DomainAuthVerifyOneTimePassProvider {
   */
   public async create(
     authId: string,
+    request: ExpressRequest,
     _connect?: PrismaClient,
   ): Promise<string> {
     const authVerifyOneTimePassId = v4();
-
+    const now = getCurrentTimeFromRequest(request);
+    console.log(test.toString());
     const data = {
       authVerifyOneTimePassId: authVerifyOneTimePassId,
       authId: authId,
       queryToken: v4(),
       passCode: (Math.floor(Math.random() * 900000) + 100000).toString(),
       // 5分先までを有効とする
-      expiresAt: new Date(new Date().getTime() + ONE_TIME_PASS_EXPIRATION),
+      expiresAt: new Date(now.getTime() + ONE_TIME_PASS_EXPIRATION),
     };
     await this.connect(_connect).authVerifyOneTimePass.create({
       data: data,
