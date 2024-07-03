@@ -1,3 +1,3 @@
 export * from './DomainHttp.module';
-export * from './HttpCookie.service';
+export * from './AuthCookie.provider';
 export * from './HttpCookieAuth.guard';

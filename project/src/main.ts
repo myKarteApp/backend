@@ -14,13 +14,7 @@ async function bootstrap() {
     .addServer('https://local.kokotest.com/api')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document, {
-    swaggerOptions: {
-      // defaultModelsExpandDepth: -1,
-      // basePath: 'api',
-    },
-  });
-
+  SwaggerModule.setup('docs', app, document);
   await app.listen(Number(process.env.BACK_PORT) || 4000);
 }
 bootstrap();

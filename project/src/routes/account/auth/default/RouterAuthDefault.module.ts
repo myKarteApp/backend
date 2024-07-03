@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { HttpCookieService } from '@/domain/http';
+import { AuthCookieProvider } from '@/domain/http';
 import { MainDatasourceModule } from '@/datasource';
 import { AuthDefaultController } from './AuthDefault.controller';
 import { DomainModule } from '@/domain/domain.module';
@@ -9,7 +9,11 @@ import { AuthDefaultService } from './AuthDefault.service';
 
 @Module({
   imports: [MainDatasourceModule, DomainModule],
-  providers: [AuthDefaultService, DomainAuthDefaultProvider, HttpCookieService],
+  providers: [
+    AuthDefaultService,
+    DomainAuthDefaultProvider,
+    AuthCookieProvider,
+  ],
   controllers: [AuthDefaultController],
 })
 export class RouterAuthDefaultModule {}

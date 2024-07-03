@@ -9,14 +9,14 @@ import { JwsTokenSchema } from '@/shared';
 import { ErrorCode } from '@/utils/errorCode';
 
 @Injectable({ scope: Scope.REQUEST })
-export class HttpCookieService {
-  loginSessionKey: string;
+export class AuthCookieProvider {
+  sessionKey: string;
   constructor(
     protected readonly datasource: MainDatasourceProvider,
     public readonly jwsTokenProvider: JwsTokenProvider,
   ) {
     if (!process.env.AUTH_LOGIN_SESSION_KEY) throw NotFound(ErrorCode.Error4);
-    this.loginSessionKey = process.env.AUTH_LOGIN_SESSION_KEY;
+    this.sessionKey = process.env.AUTH_LOGIN_SESSION_KEY;
   }
 
   public async setAuthSessionId(
@@ -37,7 +37,7 @@ export class HttpCookieService {
       },
     });
 
-    response.cookie(this.loginSessionKey, sessionId, {
+    response.cookie(this.sessionKey, sessionId, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -57,7 +57,7 @@ export class HttpCookieService {
         isDeleted: false,
       },
     });
-    response.clearCookie(this.loginSessionKey);
+    response.clearCookie(this.sessionKey);
   }
 
   public async validateLoginSession(

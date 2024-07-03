@@ -1,13 +1,19 @@
 import { Module } from '@nestjs/common';
 import { MainDatasourceModule } from '@/datasource';
 import { DomainJwsModule, JwsTokenProvider } from '../jws';
-import { HttpCookieService } from './HttpCookie.service';
+import { AuthCookieProvider } from './AuthCookie.provider';
 import { HttpCookieAuthGuard } from './HttpCookieAuth.guard';
+import { CsrfCookieProvider } from './CsrfCookie.provider';
 
 @Module({
   imports: [MainDatasourceModule, DomainJwsModule],
-  exports: [HttpCookieService],
-  providers: [HttpCookieService, JwsTokenProvider, HttpCookieAuthGuard],
+  exports: [AuthCookieProvider, CsrfCookieProvider],
+  providers: [
+    AuthCookieProvider,
+    CsrfCookieProvider,
+    JwsTokenProvider,
+    HttpCookieAuthGuard,
+  ],
   controllers: [],
 })
 export class DomainHttpModule {}

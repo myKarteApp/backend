@@ -9,7 +9,7 @@ import {
 } from 'express';
 
 import { ResponseBody } from '@/shared';
-import { HttpCookieService } from '@/domain/http';
+import { AuthCookieProvider } from '@/domain/http';
 import { MainDatasourceProvider } from '@/datasource';
 
 import { ErrorCode } from '@/utils/errorCode';
@@ -25,7 +25,7 @@ export class AuthDefaultController implements SpecLoginController {
   constructor(
     private readonly authService: AuthDefaultService,
     private readonly datasource: MainDatasourceProvider,
-    private readonly cookieService: HttpCookieService,
+    private readonly authCookieProvider: AuthCookieProvider,
     private readonly mailService: MailService,
   ) {}
 
@@ -77,8 +77,14 @@ export class AuthDefaultController implements SpecLoginController {
         const authInfo = await this.authService.findByEmail(dto, connect);
         if (!authInfo) throw NotFound(ErrorCode.Error19);
         const jwsToken =
-          await this.cookieService.jwsTokenProvider.createJwsToken(authInfo);
-        await this.cookieService.setAuthSessionId(response, jwsToken, connect);
+          await this.authCookieProvider.jwsTokenProvider.createJwsToken(
+            authInfo,
+          );
+        await this.authCookieProvider.setAuthSessionId(
+          response,
+          jwsToken,
+          connect,
+        );
         return authInfo.authId;
       },
     );
@@ -98,9 +104,14 @@ export class AuthDefaultController implements SpecLoginController {
     @Res() response: ExpressResponse,
   ): Promise<void> {
     await this.datasource.transact(async (connect: PrismaClient) => {
-      const sessionId = request.cookies[this.cookieService.loginSessionKey];
+      const sessionId =
+        request.cookies[this.authCookieProvider.sessionKey];
       if (!sessionId) return;
-      await this.cookieService.clearAuthSessionId(response, sessionId, connect);
+      await this.authCookieProvider.clearAuthSessionId(
+        response,
+        sessionId,
+        connect,
+      );
     });
 
     const responseBody: ResponseBody<'logoutAuthDefault'> = {

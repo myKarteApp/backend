@@ -97,7 +97,6 @@ export type ApiSchemaInfo = {
     request: {
       body: RegisterDto;
     };
-    // html自体を返す
     response: {
       200: {
         message: string;

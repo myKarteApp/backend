@@ -1,5 +1,15 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
-import { Response as ExpressResponse } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Render,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import * as csurf from 'csurf';
 
 import { MainDatasourceProvider } from '@/datasource';
 
@@ -21,12 +31,13 @@ export class AuthVerifyController {
   @Get('')
   async confirmRegistration(
     @Query('queryToken') queryToken: string,
+    @Req() request,
     @Res() response: ExpressResponse,
   ) {
     try {
+      request.session;
       const appDomain = process.env.APP_DOMAIN;
       if (!appDomain) throw Unexpected(ErrorCode.Error28);
-
       await this.datasource.transact(async (connect: PrismaClient) => {
         /* トークンの有効性を確認する
             - トークンが有効期限切れ
@@ -47,7 +58,7 @@ export class AuthVerifyController {
 
       const html = `
         <!DOCTYPE html>
-        <html lang="en">
+        <html lang="ja">
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,6 +84,8 @@ export class AuthVerifyController {
                 <input type="text" name="passCode" id="passCode" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               </div>
               <input type='hidden' name='queryToken' value='${queryToken}' id='queryToken'/>
+              <input type='hidden' name='_csrf' value='${request.csrfToken()}' id='_csrf'/>
+
               <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                 送信
               </button>

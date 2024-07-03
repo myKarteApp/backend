@@ -10,7 +10,7 @@ import {
 import { ResponseBody } from '@/shared';
 import { ErrorCode } from '@/utils/errorCode';
 import { AdminDatasourceProvider } from '@/datasource';
-import { HttpCookieService } from '@/domain/http';
+import { AuthCookieProvider } from '@/domain/http';
 import { AdminService } from '../../Admin.service';
 
 @Controller('/admin/auth/default')
@@ -18,7 +18,7 @@ export class AdminAuthDefaultController {
   constructor(
     private readonly adminService: AdminService,
     private readonly datasource: AdminDatasourceProvider,
-    private readonly cookieService: HttpCookieService,
+    private readonly authCookieProvider: AuthCookieProvider,
   ) {}
   @Post('login')
   async login(@Body() dto: DefaultAuthDto, @Res() response: ExpressResponse) {
@@ -27,8 +27,14 @@ export class AdminAuthDefaultController {
         const authInfo = await this.adminService.findByEmail(dto, connect);
         if (!authInfo) throw NotFound(ErrorCode.Error14);
         const jwsToken =
-          await this.cookieService.jwsTokenProvider.createJwsToken(authInfo);
-        await this.cookieService.setAuthSessionId(response, jwsToken, connect);
+          await this.authCookieProvider.jwsTokenProvider.createJwsToken(
+            authInfo,
+          );
+        await this.authCookieProvider.setAuthSessionId(
+          response,
+          jwsToken,
+          connect,
+        );
         return authInfo.authId;
       },
     );
@@ -46,9 +52,14 @@ export class AdminAuthDefaultController {
     @Res() response: ExpressResponse,
   ) {
     await this.datasource.transact(async (connect: PrismaClient) => {
-      const sessionId = request.cookies[this.cookieService.loginSessionKey];
+      const sessionId =
+        request.cookies[this.authCookieProvider.sessionKey];
       if (!sessionId) return;
-      await this.cookieService.clearAuthSessionId(response, sessionId, connect);
+      await this.authCookieProvider.clearAuthSessionId(
+        response,
+        sessionId,
+        connect,
+      );
     });
     const responseBody: ResponseBody<'logoutAdminAuthDefault'> = {
       message: 'OK',

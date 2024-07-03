@@ -2,7 +2,7 @@ import { AdminDatasourceProvider } from '@/datasource';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth';
 import { DomainClientGetDetailProvider } from '@/domain/account/roles/client/DomainClientGetDetail.provider';
 import { DomainClientGetListProvider } from '@/domain/account/roles/client/DomainClientUpdate.provider';
-import { HttpCookieService } from '@/domain/http';
+import { AuthCookieProvider } from '@/domain/http';
 import { ClientInfoDto, ResponseBody } from '@/shared';
 import { NotFound } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
@@ -17,7 +17,7 @@ import {
 export class AdminClientController {
   constructor(
     private readonly datasource: AdminDatasourceProvider,
-    private readonly cookieService: HttpCookieService,
+    private readonly authCookieProvider: AuthCookieProvider,
     private readonly domainAuthDefaultProvider: DomainAuthDefaultProvider,
     private readonly domainClientGetListProvider: DomainClientGetListProvider,
     private readonly domainClientGetDetailProvider: DomainClientGetDetailProvider,
@@ -29,13 +29,13 @@ export class AdminClientController {
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
   ) {
-    const sessionId = request.cookies[this.cookieService.loginSessionKey];
+    const sessionId = request.cookies[this.authCookieProvider.sessionKey];
     if (!sessionId) throw NotFound(ErrorCode.Error12);
 
     const clientInfoList: ClientInfoDto[] = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン状態を確認する
-        await this.cookieService.validateLoginSession(
+        await this.authCookieProvider.validateLoginSession(
           authId,
           sessionId,
           connect,
@@ -72,13 +72,13 @@ export class AdminClientController {
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
   ) {
-    const sessionId = request.cookies[this.cookieService.loginSessionKey];
+    const sessionId = request.cookies[this.authCookieProvider.sessionKey];
     if (!sessionId) throw NotFound(ErrorCode.Error12);
 
     const clientInfo: ClientInfoDto | null = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン状態を確認する
-        await this.cookieService.validateLoginSession(
+        await this.authCookieProvider.validateLoginSession(
           authId,
           sessionId,
           connect,
