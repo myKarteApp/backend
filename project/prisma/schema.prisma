@@ -28,6 +28,8 @@ model ApiAuthorization {
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // updatedBy String
+  // createdBy String
 }
 
 // ===========================
@@ -60,6 +62,7 @@ model AuthInfo {
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user   UserInfo?
 }
 
 model AuthVerifyOneTimePass {
@@ -78,7 +81,7 @@ model Trial {
   trialId String @id
   trialToken String @db.MediumText
   authId String
-  expires DateTime
+  expiresAt DateTime
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,7 +93,7 @@ model Trial {
 
 model UserInfo {
   userId String @id
-  authId String
+  authId String @unique
   birthDay DateTime
   sex String // 身体の性別
   gender String @default("")
@@ -103,6 +106,8 @@ model UserInfo {
   isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  auth AuthInfo @relation(fields: [authId], references: [authId])
 }
 
 // ===========================

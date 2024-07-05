@@ -4,10 +4,12 @@ import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { v4 } from 'uuid';
 import { Request as ExpressRequest } from 'express';
 import { getCurrentTimeFromRequest } from '@/shared';
+import { ConfigProvider } from '@/config/config.provider';
 
 @Injectable({ scope: Scope.REQUEST })
 export class DomainAuthVerifyOneTimePassProvider {
   public datasource: SpecDatasourceProvider;
+  constructor(private readonly configProvider: ConfigProvider) {}
   /*
     create
   */
@@ -25,8 +27,7 @@ export class DomainAuthVerifyOneTimePassProvider {
       passCode: (Math.floor(Math.random() * 900000) + 100000).toString(),
       // 5分先までを有効とする
       expiresAt: new Date(
-        // now.getTime() + this.configProvider.ONE_TIME_PASS_EXPIRATION,
-        now.getTime() + 5 * 60000,
+        now.getTime() + this.configProvider.ONE_TIME_PASS_EXPIRATION,
       ),
     };
     await this.connect(_connect).authVerifyOneTimePass.create({
@@ -58,6 +59,19 @@ export class DomainAuthVerifyOneTimePassProvider {
     return this.connect(_connect).authVerifyOneTimePass.findFirst({
       where: {
         queryToken: queryToken,
+      },
+    });
+  }
+  public async findOTP(
+    passCode: string,
+    queryToken: string,
+    _connect?: PrismaClient,
+  ): Promise<AuthVerifyOneTimePass | null> {
+    return this.connect(_connect).authVerifyOneTimePass.findFirst({
+      where: {
+        passCode: passCode,
+        queryToken: queryToken,
+        isDeleted: false,
       },
     });
   }

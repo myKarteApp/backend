@@ -60,7 +60,7 @@ CREATE TABLE `Trial` (
     `trialId` VARCHAR(191) NOT NULL,
     `trialToken` MEDIUMTEXT NOT NULL,
     `authId` VARCHAR(191) NOT NULL,
-    `expires` DATETIME(3) NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE `Trial` (
 CREATE TABLE `UserInfo` (
     `userId` VARCHAR(191) NOT NULL,
     `authId` VARCHAR(191) NOT NULL,
-    `birthDay` VARCHAR(191) NOT NULL,
+    `birthDay` DATETIME(3) NOT NULL,
     `sex` VARCHAR(191) NOT NULL,
     `gender` VARCHAR(191) NOT NULL DEFAULT '',
     `familyName` VARCHAR(191) NOT NULL,
@@ -84,6 +84,7 @@ CREATE TABLE `UserInfo` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `UserInfo_authId_key`(`authId`),
     PRIMARY KEY (`userId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -277,3 +278,6 @@ CREATE TABLE `ServiceMaster` (
 
     PRIMARY KEY (`serviceMasterID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `UserInfo` ADD CONSTRAINT `UserInfo_authId_fkey` FOREIGN KEY (`authId`) REFERENCES `AuthInfo`(`authId`) ON DELETE RESTRICT ON UPDATE CASCADE;

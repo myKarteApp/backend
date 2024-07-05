@@ -46,6 +46,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       isMyError && exception.error?.innerError
         ? '\n' + exception.error.innerError.stack
         : '';
+    // TODO: access.logに出せるようにする
     console.log(innerStack);
 
     const errorData =
@@ -55,12 +56,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       エラーのログを出す
     */
 
-    // TODO: access.logに出せるようにする
     const ip = request.headers['x-forwarded-for'];
-
-    // 時間の設定をする
     const currentTime = getCurrentTimeFromRequest(request);
-    // ログを出力する
     const startLogEntry = `[${currentTime.toISOString()} ERROR] ${ip} "${request.method} ${request.url} HTTP/${request['httpVersion']}" ${status}`;
     const logEntry = `${startLogEntry}\n${errorCode}${stack}`;
     fs.appendFileSync(this.logFilePath, logEntry + '\n', 'utf8');
@@ -68,7 +65,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     /*
       レスポンスを返す
     */
-
     // TODO: logEntryを外部(プロキシーのstaticでいいかな)に飛ばして保存する
     response.status(status).json({
       error: message,

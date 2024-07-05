@@ -19,9 +19,9 @@ export function escapeSqlString(_value: any) {
       case "'":
       case '"':
       case '\\':
+        // TODO: エラーとせずにエスケープする
         throw BadRequest(ErrorCode.Error1);
       default:
-        console.log('=== OK ===');
         return '\\' + char;
     }
   });

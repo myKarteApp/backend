@@ -8,7 +8,7 @@ import {
   Response as ExpressResponse,
 } from 'express';
 
-import { ResponseBody, Validator } from '@/shared';
+import { AuthRole, ResponseBody, Validator } from '@/shared';
 import { AuthCookieProvider } from '@/domain/http';
 import { MainDatasourceProvider } from '@/datasource';
 
@@ -18,6 +18,7 @@ import { AuthDefaultService } from './AuthDefault.service';
 import { MailService } from '@/domain/email/mail.service';
 import { ApiTags, ApiBody } from '@nestjs/swagger';
 import { _DefaultAuthDto } from './swaggerDto';
+import { ConfigProvider } from '@/config/config.provider';
 
 @ApiTags('AuthDefault')
 @Controller('/account/auth/default')
@@ -28,6 +29,7 @@ export class AuthDefaultController implements SpecLoginController {
     private readonly datasource: MainDatasourceProvider,
     private readonly authCookieProvider: AuthCookieProvider,
     private readonly mailService: MailService,
+    private readonly configProvider: ConfigProvider,
   ) {}
 
   @ApiBody({ type: _DefaultAuthDto })
@@ -42,6 +44,9 @@ export class AuthDefaultController implements SpecLoginController {
     if (validator.hasError()) {
       throw BadRequest(ErrorCode.Error38);
     }
+    if (dto.authRole && dto.authRole !== AuthRole.client)
+      // 認証情報作成時では、認可ロールをclientに固定する。
+      throw BadRequest(ErrorCode.Error42);
     // メイン処理
     const newAuthId = v4();
     await this.datasource.transact(async (connect: PrismaClient) => {
@@ -53,6 +58,15 @@ export class AuthDefaultController implements SpecLoginController {
         request,
         connect,
       );
+
+      if (this.configProvider.IS_LOCAL) {
+        const verifiedAuthInfo = await this.authService.verifyAuth(
+          newAuthId,
+          connect,
+        );
+        if (!verifiedAuthInfo) throw Unexpected(ErrorCode.Error28);
+        return;
+      }
       const authVerifyOneTimePass: AuthVerifyOneTimePass | null =
         await this.authService.findOneTimePassById(
           authVerifyOneTimePassId,
@@ -82,15 +96,22 @@ export class AuthDefaultController implements SpecLoginController {
     @Body() dto: DefaultAuthDto,
     @Res() response: ExpressResponse,
   ): Promise<void> {
+    // ログイン用セッションIDを設定する
+
     // 事前準備
     const validator: Validator = validateDefaultAuthDto(dto);
     if (validator.hasError()) {
       throw BadRequest(ErrorCode.Error39);
     }
+
     // メイン処理
     const authId = await this.datasource.transact(
       async (connect: PrismaClient) => {
-        const authInfo = await this.authService.findByEmail(dto, connect);
+        const authInfo = await this.authService.findByEmailAndPassword(
+          dto.email,
+          dto.password,
+          connect,
+        );
         if (!authInfo) throw NotFound(ErrorCode.Error19);
         const jwsToken =
           await this.authCookieProvider.jwsTokenProvider.createJwsToken(
@@ -119,6 +140,7 @@ export class AuthDefaultController implements SpecLoginController {
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
   ): Promise<void> {
+    // 指定のログイン用セッションIDを無効にする
     await this.datasource.transact(async (connect: PrismaClient) => {
       const sessionId = request.cookies[this.authCookieProvider.sessionKey];
       if (!sessionId) return;

@@ -2,6 +2,9 @@ import { Injectable, Scope } from '@nestjs/common';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ConfigProvider {
+  get IS_LOCAL(): boolean {
+    return this.APP_DOMAIN.includes('local');
+  }
   get APP_DOMAIN(): string {
     return process.env.APP_DOMAIN || 'localhost';
   }

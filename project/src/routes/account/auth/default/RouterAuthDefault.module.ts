@@ -7,9 +7,10 @@ import { DomainModule } from '@/domain/domain.module';
 import { AuthDefaultService } from './AuthDefault.service';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { DomainAuthVerifyOneTimePassProvider } from '@/domain/account/auth/DomainAuthVerifyOneTimePass.provider';
+import { ConfigModule } from '@/config/config.module';
 
 @Module({
-  imports: [MainDatasourceModule, DomainModule],
+  imports: [ConfigModule, MainDatasourceModule, DomainModule],
   providers: [
     AuthDefaultService,
     DomainAuthDefaultProvider,

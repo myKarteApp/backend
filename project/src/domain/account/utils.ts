@@ -1,4 +1,6 @@
-export const clientFields: string[] = [
+export const AccountFields: string[] = [
+  'auth.authId',
+  'auth.authRole',
   'auth.email',
   'auth.authType',
   'auth.authRole',
@@ -14,17 +16,10 @@ export const clientFields: string[] = [
   'user.createdAt',
 ];
 
-export const ClientJoiner = `
-    AuthInfo as auth
+export const AccountJoiner = `
+    AuthInfo AS auth
 INNER JOIN
-    UserInfo as user
+    UserInfo AS user
 ON
     auth.authId = user.authId
-INNER JOIN
-    ClientInfo as client
-ON
-    client.authId = auth.authId
-    AND auth.isDeleted = false
-    AND user.isDeleted = false
-    AND client.isDeleted = false
 `;

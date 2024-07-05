@@ -5,10 +5,12 @@ import {
   AuthVerifyOneTimePass,
   PrismaClient,
 } from '@prisma/client';
-import { AuthRole, DefaultAuthDto } from '@/shared';
+import { AuthRole, RegisterDto } from '@/shared';
 import { MainDatasourceProvider } from '@/datasource';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { DomainAuthVerifyOneTimePassProvider } from '@/domain/account/auth/DomainAuthVerifyOneTimePass.provider';
+import { NotFound } from '@/utils/error';
+import { ErrorCode } from '@/utils/errorCode';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthVerifyService {
@@ -35,14 +37,14 @@ export class AuthVerifyService {
     );
   }
 
-  public async findByEmail(
-    dto: DefaultAuthDto,
+  public async findByEmailAndPassword(
+    email: string,
+    password: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
-    return this.authDefaultProvider.findByEmail(
-      dto,
-      AuthType.default,
-      AuthRole.client,
+    return this.authDefaultProvider.findByEmailAndPassword(
+      email,
+      password,
       _connect,
     );
   }
@@ -66,6 +68,22 @@ export class AuthVerifyService {
       _connect,
     );
   }
+
+  public async findOTP(
+    passCode: string,
+    queryToken: string,
+    _connect?: PrismaClient,
+  ): Promise<AuthVerifyOneTimePass> {
+    const otp = await this.authVerifyOneTimePassProvider.findOTP(
+      passCode,
+      queryToken,
+      _connect,
+    );
+    if (!otp) throw NotFound(ErrorCode.Error43);
+    if (otp.expiresAt < new Date()) throw NotFound(ErrorCode.Error44);
+    return otp;
+  }
+
   // public async findOneTimePassById(
   //   authVerifyOneTimePassId: string,
   //   _connect?: PrismaClient,

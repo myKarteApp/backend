@@ -12,6 +12,7 @@ export class MainDatasourceProvider extends SpecDatasourceProvider {
     return new PrismaClient({
       datasourceUrl: datasourceUrl,
       errorFormat: 'pretty',
+      log: ['query'],
     });
   }
 }

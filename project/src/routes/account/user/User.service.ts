@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { UserInfoDto } from '@/shared';
+import { CreateUserInfo, UserInfoDto } from '@/shared';
 import { MainDatasourceProvider } from '@/datasource';
 import { DomainUserProvider } from '@/domain/account/user/DomainUser.provider';
 
@@ -16,22 +16,16 @@ export class UserService {
     create
   */
   public async createUserInfo(
-    dto: UserInfoDto,
+    dto: CreateUserInfo,
+    authId: string,
     newUserId: string,
     _connect?: PrismaClient,
   ): Promise<void> {
     await this.userProvider.createUserInfo(
       {
+        authId: authId,
         userId: newUserId,
-        authId: dto.authId,
-        birthDay: dto.birthDay,
-        sex: dto.sex,
-        gender: dto.gender,
-        familyName: dto.familyName,
-        givenName: dto.givenName,
-        address: dto.address,
-        tel: dto.tel,
-        profession: dto.profession,
+        ...dto,
       },
       _connect,
     );

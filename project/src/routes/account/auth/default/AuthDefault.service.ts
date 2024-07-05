@@ -20,9 +20,9 @@ export class AuthDefaultService {
   ) {
     this.authDefaultProvider.datasource = datasource;
   }
-  /*
-    create
-  */
+  /* ====================
+    AuthInfo
+  ==================== */
   public async createAuthInfo(
     dto: DefaultAuthDto,
     newAuthId: string,
@@ -34,16 +34,14 @@ export class AuthDefaultService {
         email: dto.email,
         password: dto.password,
         authType: AuthType.default,
-        authRole: AuthRole.client,
+        authRole: dto.authRole ? dto.authRole : AuthRole.client,
         isVerify: false,
+        isTrial: false,
       },
       _connect,
     );
   }
 
-  /*
-    read
-  */
   public async findById(
     authId: string,
     _connect?: PrismaClient,
@@ -55,19 +53,27 @@ export class AuthDefaultService {
       _connect,
     );
   }
-
-  public async findByEmail(
-    dto: DefaultAuthDto,
+  public async verifyAuth(
+    authId: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
-    return this.authDefaultProvider.findByEmail(
-      dto,
-      AuthType.default,
-      AuthRole.client,
+    return this.authDefaultProvider.verifyAuthInfo(authId, _connect);
+  }
+
+  public async findByEmailAndPassword(
+    email: string,
+    password,
+    _connect?: PrismaClient,
+  ): Promise<AuthInfo | null> {
+    return this.authDefaultProvider.findByEmailAndPassword(
+      email,
+      password,
       _connect,
     );
   }
-
+  /* ====================
+    OTP
+  ==================== */
   public async createOneTimePass(
     authId: string,
     request: ExpressRequest,

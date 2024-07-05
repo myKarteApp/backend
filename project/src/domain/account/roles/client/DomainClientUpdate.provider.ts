@@ -13,7 +13,7 @@ const authInfoKeys = [
   'password',
   'authType',
   'authRole',
-  'identityConfirmed',
+  'isVerify',
   'isTrial',
 ];
 

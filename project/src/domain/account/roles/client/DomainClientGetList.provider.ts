@@ -9,16 +9,15 @@ import { ClientJoiner, clientFields } from './utils';
 
 @Injectable({ scope: Scope.REQUEST })
 export class DomainClientGetListProvider {
-  private readonly hashSalt = 10;
   public datasource: SpecDatasourceProvider;
 
   async getAllListByAdmin(
-    authInfoOfAdmin: AuthInfo,
+    authId: string,
+    authRole: AuthRole,
     _connect?: PrismaClient,
   ): Promise<ClientInfoDto[]> {
-    if (authInfoOfAdmin.authRole > AuthRole.admin)
-      throw Unauthorized(ErrorCode.Error21);
-    escapeSqlString(authInfoOfAdmin.authId);
+    if (authRole > AuthRole.admin) throw Unauthorized(ErrorCode.Error21);
+    escapeSqlString(authId);
 
     const sql = `
       SELECT 
@@ -27,7 +26,7 @@ export class DomainClientGetListProvider {
       FROM
         ${ClientJoiner}
       WHERE
-        auth.authId <> ${authInfoOfAdmin.authId}
+        auth.authId <> ${authId} 
         AND auth.isDeleted = false
         AND user.isDeleted = false
       ORDER BY

@@ -1,7 +1,17 @@
-// import { z } from 'zod';
-
 import { AuthRole, AuthType } from '../enum';
 import { Validator } from '../utils/error';
+
+export function getEnumValue<T extends { [key: string]: string }>(
+  enumType: T,
+  value: string,
+): T[keyof T] {
+  const enumValues = Object.values(enumType) as string[];
+  if (enumValues.includes(value)) {
+    return value as T[keyof T];
+  } else {
+    throw new Error(`Value '${value}' does not exist in enum`);
+  }
+}
 
 export type ResponseOK = {
   message: string;
@@ -12,8 +22,8 @@ export type DefaultAuthDto = {
   email: string;
   password: string;
   authType?: string;
-  authRole?: string;
-  identityConfirmed?: boolean;
+  authRole?: number;
+  isVerify?: boolean;
   isTrial?: boolean;
 };
 
@@ -32,24 +42,14 @@ export const validateDefaultAuthDto = (dto: DefaultAuthDto): Validator => {
       validator.pushError('authType', '認証形式が不正です。');
   }
   if (dto.authRole) {
-    const authRole = Object.keys(AuthRole).filter((key) =>
-      isNaN(Number(AuthRole[key])),
-    );
+    const authRole = Object.keys(AuthRole)
+      .filter((key) => !isNaN(Number(AuthRole[key])))
+      .map((key) => Number(AuthRole[key]));
     if (!authRole.includes(dto.authRole))
       validator.pushError('authRoles', '認可が不正です。');
   }
   return validator;
 };
-// // スキーマを定義
-// export const DefaultAuthDto = z.object({
-//   authId: z.string().nullable(),
-//   email: z.string().email(),
-//   password: z.string(),
-//   authType: z.string().nullable(),
-//   authRole: z.string().nullable(),
-//   identityConfirmed: z.boolean(),
-//   isTrial: z.boolean().nullable(),
-// });
 
 export type RegisterDto = {
   email: string;
@@ -80,7 +80,7 @@ export const validateRegisterDto = (dto: Partial<RegisterDto>): Validator => {
 };
 
 export enum SexType {
-  male = 'mail',
+  male = 'male',
   female = 'female',
 }
 
@@ -98,10 +98,26 @@ export type UserInfoDto = {
   createdAt?: Date; //作成時点ではnullでやってくる
 };
 
-export type AccountInfoDto = Omit<
-  DefaultAuthDto & UserInfoDto,
-  'authId' | 'password'
->;
+export type CreateUserInfo = {
+  birthDay: Date;
+  sex: SexType;
+  gender: string;
+  familyName: string;
+  givenName: string;
+  address: string;
+  tel: string;
+  profession: string;
+};
+
+export type AccountInfoDto = Omit<DefaultAuthDto, 'authId' | 'password'> & {
+  user: Omit<UserInfoDto, 'authId'>;
+};
+
+export type AccountInfo = AccountInfoDto & {
+  authId: string;
+  authRole: AuthRole;
+};
+
 export type ClientInfoDto = Omit<AccountInfoDto, 'userId'> & {
   clientId: string;
 };
@@ -112,4 +128,29 @@ export type JwsTokenSchema = {
   isExpired: boolean;
 };
 
+export type CreateAccountInfoDto = {
+  // AuthInfo
+  email: string;
+  password: string;
+  authType: string;
+  authRole: number;
+  isVerify: boolean;
+  isTrial: boolean;
+  user: {
+    // UserInfo
+    birthDay: Date;
+    sex: SexType;
+    gender: string;
+    familyName: string;
+    givenName: string;
+    address: string;
+    tel: string;
+    profession: string;
+  };
+};
+
 export type DefaultColumns = 'isDeleted' | 'createdAt' | 'updatedAt';
+
+export type UserIdListDto = {
+  userIdList: string[];
+};

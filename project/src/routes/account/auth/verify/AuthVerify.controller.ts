@@ -15,9 +15,10 @@ import {
   validateRegisterDto,
 } from '@/shared';
 import { AuthVerifyService } from './AuthVerify.service';
-import { AuthInfo, PrismaClient } from '@prisma/client';
+import { AuthInfo, AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { CsrfSessionProvider } from '@/domain/http/CsrfSession.provider';
 import { _RegisterDto } from './swaggerDto';
+import { ConfigProvider } from '@/config/config.provider';
 
 @ApiTags('AuthVerify')
 @Controller('/account/auth/verify')
@@ -26,6 +27,7 @@ export class AuthVerifyController {
     private readonly datasource: MainDatasourceProvider,
     private readonly authVerifyService: AuthVerifyService,
     private readonly csrfSessionProvider: CsrfSessionProvider,
+    private readonly configProvider: ConfigProvider,
   ) {}
 
   @Get('')
@@ -37,22 +39,22 @@ export class AuthVerifyController {
     if (!queryToken) throw BadRequest(ErrorCode.Error24);
     if (queryToken.length <= 0) throw BadRequest(ErrorCode.Error40);
     try {
-      // await this.datasource.transact(async (connect: PrismaClient) => {
-      //   // トークンの期限は有効であるか？
-      //   const oneTimePass: AuthVerifyOneTimePass | null =
-      //     await this.authVerifyService.findByQueryToken(queryToken, connect);
-      //   if (!oneTimePass) throw NotFound(ErrorCode.Error16);
-      //   if ((oneTimePass.expiresAt = new Date()))
-      //     throw NotFound(ErrorCode.Error29);
+      await this.datasource.transact(async (connect: PrismaClient) => {
+        // トークンの期限は有効であるか？
+        const oneTimePass: AuthVerifyOneTimePass | null =
+          await this.authVerifyService.findByQueryToken(queryToken, connect);
+        if (!oneTimePass) throw NotFound(ErrorCode.Error16);
+        if (oneTimePass.expiresAt < new Date())
+          throw NotFound(ErrorCode.Error29);
 
-      //   // 認証情報が未認証であるか？
-      //   const authInfo: AuthInfo | null =
-      //     await this.authVerifyService.findAuthInfoById(oneTimePass.authId);
-      //   if (!authInfo) throw NotFound(ErrorCode.Error30);
-      //   if (authInfo.isVerify) throw NotFound(ErrorCode.Error31);
-      // });
+        // 認証情報が未認証であるか？
+        const authInfo: AuthInfo | null =
+          await this.authVerifyService.findAuthInfoById(oneTimePass.authId);
+        if (!authInfo) throw NotFound(ErrorCode.Error30);
+        if (authInfo.isVerify) throw NotFound(ErrorCode.Error31);
+      });
       const csrfToken = this.csrfSessionProvider.setCsrfToken(request);
-      const APP_DOMAIN = process.env.APP_DOMAIN || 'localhost';
+      const APP_DOMAIN = this.configProvider.APP_DOMAIN;
       const html = `
         <!DOCTYPE html>
         <html lang="ja">
@@ -195,14 +197,20 @@ export class AuthVerifyController {
     // 事前処理
     const validator = validateRegisterDto(dto);
     if (validator.hasError()) throw BadRequest(ErrorCode.Error41);
+    this.csrfSessionProvider.verifyCsrfToken(request);
+
     // メイン処理
     await this.datasource.transact(async (connect: PrismaClient) => {
-      this.csrfSessionProvider.verifyCsrfToken(request);
       // 認証情報の確認をする
-      const authInfo = await this.authVerifyService.findByEmail(dto, connect);
+      const authInfo = await this.authVerifyService.findByEmailAndPassword(
+        dto.email,
+        dto.password,
+        connect,
+      );
       if (!authInfo) throw NotFound(ErrorCode.Error32);
+      // クーポンの有効性を確認する
+      await this.authVerifyService.findOTP(dto.passCode, dto.queryToken);
       // 認証情報を有効にする
-
       const verifiedAuthInfo: AuthInfo | null =
         await this.authVerifyService.verifyAuthInfo(authInfo.authId);
       if (!verifiedAuthInfo) throw NotFound(ErrorCode.Error33);

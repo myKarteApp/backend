@@ -8,8 +8,10 @@ import { AdminDatasourceModule, MainDatasourceModule } from '@/datasource';
 import { controllerModuleList } from '@/routes';
 import { HttpExceptionFilter } from '@/filters/httpException.filter';
 import { LoggerMiddleware } from '@/middleware/logger.middleware';
+import { ConfigModule } from '@/config/config.module';
 
 const moduleList = [
+  ConfigModule,
   DomainModule,
   // admin用
   AdminDatasourceModule,

@@ -3,9 +3,11 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
 import { MailService } from './mail.service';
+import { ConfigModule } from '@/config/config.module';
 
 @Module({
   imports: [
+    ConfigModule,
     MailerModule.forRoot({
       // SMTP の設定
       transport: {

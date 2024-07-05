@@ -3,16 +3,27 @@ import { DomainClientModule } from './roles/client/DomainClient.module';
 import { DomainUserModel } from './user/DomainUser.module';
 import { DomainAuthDefaultModule } from './auth/default/DomainAuthDefault.module';
 import { DomainAuthModule } from './auth/DomainAuth.module';
+import { DomainAccountProvider } from './DomainAccount.provider';
+import { DomainAccountGetListProvider } from './DomainAccountGetList.provider';
+import { DomainAccountGetDetailProvider } from './DomainAccountGetDetail.provider';
 
 @Module({
   imports: [],
   providers: [
+    DomainAccountProvider,
+    DomainAccountGetListProvider,
+    DomainAccountGetDetailProvider,
+    // 内部
     DomainAuthModule,
     DomainClientModule,
     DomainUserModel,
     DomainAuthDefaultModule,
   ],
   exports: [
+    DomainAccountProvider,
+    DomainAccountGetListProvider,
+    DomainAccountGetDetailProvider,
+    // 内部
     DomainAuthModule,
     DomainClientModule,
     DomainUserModel,

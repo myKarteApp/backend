@@ -28,15 +28,15 @@ export class AdminService {
     );
   }
 
-  public async findByEmail(
-    dto: DefaultAuthDto,
-    _connect?: PrismaClient,
-  ): Promise<AuthInfo | null> {
-    return this.authDefaultProvider.findByEmail(
-      dto,
-      AuthType.default,
-      AuthRole.admin,
-      _connect,
-    );
-  }
+  // public async findByEmail(
+  //   dto: DefaultAuthDto,
+  //   _connect?: PrismaClient,
+  // ): Promise<AuthInfo | null> {
+  //   return this.authDefaultProvider.findByEmail(
+  //     dto,
+  //     AuthType.default,
+  //     AuthRole.admin,
+  //     _connect,
+  //   );
+  // }
 }

@@ -1,7 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthInfo, AuthType, PrismaClient } from '@prisma/client';
-import { AuthRole, DefaultAuthDto, DefaultColumns } from '@/shared';
+import { AuthRole, DefaultColumns } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -12,7 +12,7 @@ export class DomainAuthDefaultProvider {
     create
   */
   public async createAuthInfo(
-    data: Omit<AuthInfo, DefaultColumns | 'isTrial'>,
+    data: Omit<AuthInfo, DefaultColumns>,
     _connect?: PrismaClient,
   ): Promise<void> {
     data.password = await this.hashPassword(data.password);
@@ -45,26 +45,40 @@ export class DomainAuthDefaultProvider {
     });
   }
 
-  public async findByEmail(
-    dto: DefaultAuthDto,
-    authType: AuthType,
-    authRole: AuthRole,
+  public async findByEmailAndPassword(
+    email: string,
+    password: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
     const authInfo: AuthInfo | null = await this.connect(
       _connect,
     ).authInfo.findUnique({
       where: {
-        email: dto.email,
-        authType: authType,
-        authRole: authRole,
+        email: email,
         isDeleted: false,
       },
     });
     if (!authInfo) return null;
-    if (!this.comparePasswords(dto.password, authInfo.password)) return null;
+    if (!this.comparePasswords(password, authInfo.password)) return null;
     return authInfo;
   }
+
+  // public async findByEmail(
+  //   email: string,
+  //   _connect?: PrismaClient,
+  // ): Promise<AuthInfo | null> {
+  //   const authInfo: AuthInfo | null = await this.connect(
+  //     _connect,
+  //   ).authInfo.findUnique({
+  //     where: {
+  //       email: email,
+  //       isDeleted: false,
+  //     },
+  //   });
+  //   if (!authInfo) return null;
+  //   if (!this.comparePasswords(dto.password, authInfo.password)) return null;
+  //   return authInfo;
+  // }
 
   public async comparePasswords(
     plainPassword: string,

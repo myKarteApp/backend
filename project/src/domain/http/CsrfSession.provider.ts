@@ -28,7 +28,6 @@ export class CsrfSessionProvider {
       request.session[this.sessionKey] = ${request.session[this.sessionKey]}
       request.headers[CSRF_HEADER] = ${request.headers[CSRF_HEADER]},
     `);
-    console.log(request.headers);
     if (request.session[this.sessionKey] !== request.headers[CSRF_HEADER])
       throw Unauthorized(ErrorCode.Error37);
   }

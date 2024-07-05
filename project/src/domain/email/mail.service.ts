@@ -3,31 +3,33 @@ import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Unexpected } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
 import { AuthVerifyOneTimePass } from '@prisma/client';
+import { ConfigProvider } from '@/config/config.provider';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configProvider: ConfigProvider,
+  ) {}
 
   async sendTemporaryRegistration(
     email: string,
     authVerifyOneTimePass: AuthVerifyOneTimePass,
   ) {
     try {
-      const APP_DOMAIN = process.env.APP_DOMAIN || 'localhost';
       const dto: ISendMailOptions = {
         to: email,
         subject: '[MyKarte]仮登録ありがとうございます！',
         template: 'temporaryRegistration',
         context: {
-          url: `https://${APP_DOMAIN}/account/auth/default/verify?queryToken=${authVerifyOneTimePass.queryToken}`,
+          url: `https://${this.configProvider.APP_DOMAIN}/account/auth/default/verify?queryToken=${authVerifyOneTimePass.queryToken}`,
           expiresAt: authVerifyOneTimePass.expiresAt,
           passCode: authVerifyOneTimePass.passCode,
         },
       };
-      const result = await this.mailerService.sendMail(dto);
-      console.log(result)
+      await this.mailerService.sendMail(dto);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw Unexpected(ErrorCode.Error25);
     }
   }

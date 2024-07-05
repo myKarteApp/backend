@@ -6,9 +6,10 @@ import { AuthVerifyController } from './AuthVerify.controller';
 import { AuthVerifyService } from './AuthVerify.service';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { DomainAuthVerifyOneTimePassProvider } from '@/domain/account/auth/DomainAuthVerifyOneTimePass.provider';
+import { ConfigModule } from '@/config/config.module';
 
 @Module({
-  imports: [MainDatasourceModule, DomainModule],
+  imports: [MainDatasourceModule, ConfigModule, DomainModule],
   providers: [
     AuthVerifyService,
     DomainAuthDefaultProvider,
