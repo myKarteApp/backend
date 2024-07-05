@@ -23,10 +23,9 @@ export class JwsTokenProvider {
     const decodedToken = jwt.verify(token, this.privateKey);
     const expiresAt = new Date(decodedToken.exp * 1000);
     const currentDateTime = new Date();
-    const isExpired = currentDateTime > expiresAt;
     return {
       payload: decodedToken,
-      isExpired: isExpired,
+      isExpired: currentDateTime > expiresAt,
     };
   }
 }

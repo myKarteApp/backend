@@ -1,7 +1,7 @@
 import { AdminDatasourceProvider } from '@/datasource';
-import { DomainAuthDefaultProvider } from '@/domain/account/auth';
+import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { DomainClientGetDetailProvider } from '@/domain/account/roles/client/DomainClientGetDetail.provider';
-import { DomainClientGetListProvider } from '@/domain/account/roles/client/DomainClientUpdate.provider';
+import { DomainClientGetListProvider } from '@/domain/account/roles/client/DomainClientGetList.provider';
 import { AuthCookieProvider } from '@/domain/http';
 import { ClientInfoDto, ResponseBody } from '@/shared';
 import { NotFound } from '@/utils/error';

@@ -7,11 +7,9 @@ import {
 } from '@prisma/client';
 import { AuthRole, DefaultAuthDto } from '@/shared';
 import { MainDatasourceProvider } from '@/datasource';
-import {
-  DomainAuthDefaultProvider,
-  DomainAuthVerifyOneTimePassProvider,
-} from '@/domain/account/auth';
 import { Request as ExpressRequest } from 'express';
+import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
+import { DomainAuthVerifyOneTimePassProvider } from '@/domain/account/auth/DomainAuthVerifyOneTimePass.provider';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthDefaultService {

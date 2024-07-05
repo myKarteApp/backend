@@ -7,7 +7,12 @@ import { CsrfSessionProvider } from './CsrfSession.provider';
 
 @Module({
   imports: [MainDatasourceModule, DomainJwsModule],
-  exports: [AuthCookieProvider, CsrfSessionProvider],
+  exports: [
+    AuthCookieProvider,
+    CsrfSessionProvider,
+    JwsTokenProvider,
+    HttpCookieAuthGuard,
+  ],
   providers: [
     AuthCookieProvider,
     CsrfSessionProvider,

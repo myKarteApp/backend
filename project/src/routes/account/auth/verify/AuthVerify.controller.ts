@@ -6,11 +6,16 @@ import {
 import { MainDatasourceProvider } from '@/datasource';
 
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { BadRequest, NotFound, Unexpected } from '@/utils/error';
+import { BadRequest, NotFound } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
-import { CSRF_HEADER, RegisterDto, ResponseBody, validateRegisterDto } from '@/shared';
+import {
+  CSRF_HEADER,
+  RegisterDto,
+  ResponseBody,
+  validateRegisterDto,
+} from '@/shared';
 import { AuthVerifyService } from './AuthVerify.service';
-import { AuthInfo, AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
+import { AuthInfo, PrismaClient } from '@prisma/client';
 import { CsrfSessionProvider } from '@/domain/http/CsrfSession.provider';
 import { _RegisterDto } from './swaggerDto';
 
@@ -25,14 +30,13 @@ export class AuthVerifyController {
 
   @Get('')
   async confirmRegistration(
-    @Query('queryToken') queryToken: string,
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
+    @Query('queryToken') queryToken?: string,
   ) {
+    if (!queryToken) throw BadRequest(ErrorCode.Error24);
     if (queryToken.length <= 0) throw BadRequest(ErrorCode.Error40);
     try {
-      const appDomain = process.env.APP_DOMAIN;
-      if (!appDomain) throw Unexpected(ErrorCode.Error28);
       // await this.datasource.transact(async (connect: PrismaClient) => {
       //   // トークンの期限は有効であるか？
       //   const oneTimePass: AuthVerifyOneTimePass | null =
@@ -48,7 +52,7 @@ export class AuthVerifyController {
       //   if (authInfo.isVerify) throw NotFound(ErrorCode.Error31);
       // });
       const csrfToken = this.csrfSessionProvider.setCsrfToken(request);
-
+      const APP_DOMAIN = process.env.APP_DOMAIN || 'localhost';
       const html = `
         <!DOCTYPE html>
         <html lang="ja">
@@ -71,7 +75,7 @@ export class AuthVerifyController {
           <div class="bg-white p-8 rounded shadow-md w-full max-w-sm">
             <h1 class="text-2xl font-bold mb-6">本登録画面</h1>
             <p class="font-bold mb-6">登録した情報を再度、入力してください</p>
-            <form action="https://${appDomain}/api/account/auth/verify" method="POST">
+            <form action="https://${APP_DOMAIN}/api/account/auth/verify" method="POST">
               <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
                 <input type="email" name="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -98,6 +102,7 @@ export class AuthVerifyController {
             </form>
           </div>
           <script>
+            const appDomain = '${APP_DOMAIN}';
             $(document).ready(function() {
               $('form').submit(function(event) {
                 event.preventDefault();
@@ -128,15 +133,15 @@ export class AuthVerifyController {
 
                 $.ajax({
                   type: 'POST',
-                  url: "https://${appDomain}/api/account/auth/verify",
-                  // data: dto,
+                  url: "https://" + appDomain + "/api/account/auth/verify",
+                  data: JSON.stringify(dto),
                   headers: {
                     'Content-Type': 'application/json',
                     '${CSRF_HEADER}': '${csrfToken}',
                   },
                   success: function(response) {
                     alert('本登録できました！');
-                    window.location.href = "https://${appDomain}";
+                    window.location.href = "https://" + appDomain;
                   },
                   error: function(error) {
                     alert('エラー発生！正しく登録した情報を再度、入力してください');

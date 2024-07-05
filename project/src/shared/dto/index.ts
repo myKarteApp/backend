@@ -40,6 +40,16 @@ export const validateDefaultAuthDto = (dto: DefaultAuthDto): Validator => {
   }
   return validator;
 };
+// // スキーマを定義
+// export const DefaultAuthDto = z.object({
+//   authId: z.string().nullable(),
+//   email: z.string().email(),
+//   password: z.string(),
+//   authType: z.string().nullable(),
+//   authRole: z.string().nullable(),
+//   identityConfirmed: z.boolean(),
+//   isTrial: z.boolean().nullable(),
+// });
 
 export type RegisterDto = {
   email: string;
@@ -48,21 +58,23 @@ export type RegisterDto = {
   queryToken: string;
 };
 
-export const validateRegisterDto = (dto: RegisterDto): Validator => {
+export const validateRegisterDto = (dto: Partial<RegisterDto>): Validator => {
   const validator = new Validator();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dto.email))
+  const { email, password, passCode, queryToken } = dto;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email ? email : ''))
     validator.pushError('email', 'emailを正しく入力しください。');
-  if (Object.keys(dto.password).length < 8)
+  if (Object.keys(password ? password : '').length < 8)
     validator.pushError(
       'password',
       'パスワードは8文字以上で記載してください。',
     );
-  if (Object.keys(dto.passCode).length !== 6)
+  if (Object.keys(passCode ? passCode : '').length !== 6)
     validator.pushError(
       'passCode',
       'パスコードは6文字以上で記載してください。',
     );
-  if (Object.keys(dto.queryToken).length === 0)
+  if (Object.keys(queryToken ? queryToken : '').length === 0)
     validator.pushError('queryToken', '不正な操作が行われました。');
   return validator;
 };
