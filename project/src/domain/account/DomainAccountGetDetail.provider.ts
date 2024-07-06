@@ -1,4 +1,10 @@
-import { AccountInfoFromDB, AuthRole, SexType, getEnumValue } from '@/shared';
+import {
+  AccountInfoOfDB,
+  AuthRole,
+  SexType,
+  convertIntoAccountInfoOfDB,
+  getEnumValue,
+} from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { BadRequest, NotFound, Unauthorized, Unexpected } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
@@ -16,7 +22,8 @@ export class DomainAccountGetDetailProvider {
     authRole: AuthRole,
     targetUserId: string,
     _connect?: PrismaClient,
-  ): Promise<AccountInfoFromDB> {
+  ): Promise<AccountInfoOfDB> {
+    // NOTE: ユーザー情報があることが前提
     if (authRole !== AuthRole.admin) throw Unauthorized(ErrorCode.Error21);
     escapeSqlString(authId);
     escapeSqlString(targetUserId);
@@ -40,30 +47,9 @@ export class DomainAccountGetDetailProvider {
         `,
       ]),
     );
-    if (result.length === 0) throw NotFound(ErrorCode.Error1);
+    if (result.length === 0) throw NotFound(ErrorCode.Error13);
     const rec = result[0];
-    return {
-      authId: rec.authId,
-      authRole: rec.authRole,
-      email: rec.email,
-      authType: rec.authType,
-      isVerify: rec.isVerify,
-      isTrial: rec.isTrial,
-      user: {
-        userId: rec.userId,
-        birthDay: rec.birthDay,
-        sex: getEnumValue(SexType, rec.sex),
-        gender: rec.gender,
-        familyName: rec.familyName,
-        givenName: rec.givenName,
-        tel: rec.tel,
-        profession: rec.profession,
-        address: rec.address,
-        createdAt: rec.createdAt,
-      },
-    };
-
-    return result[0];
+    return convertIntoAccountInfoOfDB(rec);
   }
 
   protected connect(_connect: PrismaClient | undefined): PrismaClient {

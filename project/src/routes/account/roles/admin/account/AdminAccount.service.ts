@@ -2,23 +2,22 @@ import { AdminDatasourceProvider } from '@/datasource';
 import { DomainAccountProvider } from '@/domain/account/DomainAccount.provider';
 import { DomainAccountGetDetailProvider } from '@/domain/account/DomainAccountGetDetail.provider';
 import { DomainAccountGetListProvider } from '@/domain/account/DomainAccountGetList.provider';
+import { DomainAccountGetListByIdListProvider } from '@/domain/account/DomainAccountGetListByIdList.provider';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { DomainUserProvider } from '@/domain/account/user/DomainUser.provider';
 import { AuthCookieProvider } from '@/domain/http';
 import {
-  AccountInfoFromDB,
+  AccountInfoOfDB,
   AuthRole,
   CreateAccountInfoDto,
+  UserIdListDto,
   getEnumValue,
 } from '@/shared';
 import { BadRequest, NotFound } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
 import { Injectable, Scope } from '@nestjs/common';
 import { AuthType, PrismaClient } from '@prisma/client';
-import {
-  Request as ExpressRequest,
-  Response as ExpressResponse,
-} from 'express';
+import { Request as ExpressRequest } from 'express';
 import { v4 } from 'uuid';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -34,6 +33,7 @@ export class AdminAccountService {
     // read
     private readonly domainAccountGetListProvider: DomainAccountGetListProvider,
     private readonly domainAccountGetDetailProvider: DomainAccountGetDetailProvider,
+    private readonly domainAccountGetListByIdListProvider: DomainAccountGetListByIdListProvider,
   ) {}
   /* ============================
     認証用
@@ -42,15 +42,15 @@ export class AdminAccountService {
     request: ExpressRequest,
     userId: string,
     _connect?: PrismaClient,
-  ): Promise<AccountInfoFromDB> {
+  ): Promise<AccountInfoOfDB> {
     // セッションは存在するか？
     const sessionId = request.cookies[this.authCookieProvider.sessionKey];
     if (!sessionId) throw NotFound(ErrorCode.Error12);
     // アカウントがadminであるか？
-    const myAccount: AccountInfoFromDB =
+    const myAccount: AccountInfoOfDB =
       await this.domainAccountProvider.getAccountInfoByUserId(userId, _connect);
     if (myAccount.authRole !== AuthRole.admin)
-      throw BadRequest(ErrorCode.Error1);
+      throw BadRequest(ErrorCode.Error46);
     // ログイン用セッションは有効か？
     await this.authCookieProvider.validateLoginSession(
       myAccount.authId,
@@ -98,16 +98,42 @@ export class AdminAccountService {
     );
   }
 
+  async getDetail(
+    authId: string,
+    authRole: AuthRole,
+    targetUserId: string,
+    _connect?: PrismaClient,
+  ): Promise<AccountInfoOfDB> {
+    return this.domainAccountGetDetailProvider.getDetailByAdmin(
+      authId,
+      authRole,
+      targetUserId,
+      _connect,
+    );
+  }
+
+  async getAllList(
+    authId: string,
+    authRole: AuthRole,
+    _connect?: PrismaClient,
+  ): Promise<AccountInfoOfDB[]> {
+    return this.domainAccountGetListProvider.getAllListByAdmin(
+      authId,
+      authRole,
+      _connect,
+    );
+  }
+
   async update(
     authId: string,
     authRole: AuthRole,
     targetUserId: string,
     dto: Partial<CreateAccountInfoDto>,
     _connect?: PrismaClient,
-  ): Promise<any> {
+  ): Promise<void> {
     // authIdを取得する
     // NOTE: 存在しなければエラーが発生している
-    const targetAccount: AccountInfoFromDB =
+    const targetAccount: AccountInfoOfDB =
       await this.domainAccountGetDetailProvider.getDetailByAdmin(
         authId,
         authRole,
@@ -115,18 +141,16 @@ export class AdminAccountService {
         _connect,
       );
     const { user } = dto;
+    const auth = { ...dto };
     // 認証情報を更新する
-    const authDto = { ...dto };
-    if (user) delete authDto['user'];
+    if (user) delete auth['user'];
     await this.domainAuthDefaultProvider.update(
       targetAccount.authId,
-      dto,
+      auth,
       _connect,
     );
     // ユーザー情報を更新する
     if (user) {
-      const targetUserId = targetAccount.user.userId;
-      if (!targetUserId) throw BadRequest(ErrorCode.Error1);
       await this.domainUserProvider.update(
         targetAccount.authId,
         targetUserId,
@@ -136,31 +160,64 @@ export class AdminAccountService {
     }
   }
 
-  async getAllList(
-    authId: string,
-    authRole: AuthRole,
-    _connect?: PrismaClient,
-  ): Promise<AccountInfoFromDB[]> {
-    return this.domainAccountGetListProvider.getAllListByAdmin(
-      authId,
-      authRole,
-      _connect,
-    );
-  }
-  async getDetail(
+  async delete(
     authId: string,
     authRole: AuthRole,
     targetUserId: string,
     _connect?: PrismaClient,
-  ): Promise<AccountInfoFromDB> {
-    return this.domainAccountGetDetailProvider.getDetailByAdmin(
-      authId,
-      authRole,
-      targetUserId,
+  ): Promise<void> {
+    // authIdを取得する
+    // NOTE: 存在しなければエラーが発生している
+    const targetAccount: AccountInfoOfDB =
+      await this.domainAccountGetDetailProvider.getDetailByAdmin(
+        authId,
+        authRole,
+        targetUserId,
+        _connect,
+      );
+    // 認証情報を更新する
+    await this.domainAuthDefaultProvider.delete(
+      [targetAccount.authId],
       _connect,
     );
+    // ユーザー情報を更新する
+    if (targetAccount.user) {
+      await this.domainUserProvider.delete(
+        [targetAccount.user.userId],
+        _connect,
+      );
+    }
   }
 
+  async bulkDelete(
+    authId: string,
+    authRole: AuthRole,
+    dto: UserIdListDto,
+    _connect?: PrismaClient,
+  ): Promise<void> {
+    const targetAccount: AccountInfoOfDB[] =
+      await this.domainAccountGetListByIdListProvider.getListByAdmin(
+        authId,
+        authRole,
+        dto,
+        _connect,
+      );
+    const authIdList: string[] = targetAccount.map((rec) => {
+      return rec.authId;
+    });
+
+    console.log(targetAccount);
+    // 認証情報を更新する
+    await this.domainAuthDefaultProvider.delete(authIdList, _connect);
+    // ユーザー情報を更新する
+    const userIdList: string[] = [];
+    targetAccount.forEach((rec) => {
+      if (rec.user) userIdList.push(rec.user.userId);
+    });
+    if (userIdList.length > 0) {
+      await this.domainUserProvider.delete(userIdList, _connect);
+    }
+  }
   /* ============================
     以下、その他
   ============================ */

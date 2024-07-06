@@ -18,7 +18,7 @@ export class DomainClientGetDetailProvider {
     _connect?: PrismaClient,
   ): Promise<ClientInfoDto | null> {
     if (authInfoOfAdmin.authRole > AuthRole.admin)
-      throw Unauthorized(ErrorCode.Error21);
+      throw Unauthorized(ErrorCode.Error50);
     escapeSqlString(authInfoOfAdmin.authId);
     escapeSqlString(clientId);
 
@@ -49,7 +49,7 @@ export class DomainClientGetDetailProvider {
     _connect?: PrismaClient,
   ): Promise<ClientInfoDto | null> {
     if (authInfoOfOwner.authRole > AuthRole.owner)
-      throw Unauthorized(ErrorCode.Error21);
+      throw Unauthorized(ErrorCode.Error51);
     escapeSqlString(authInfoOfOwner.authId);
     escapeSqlString(businessOwnerId);
     escapeSqlString(clientId);
@@ -96,7 +96,7 @@ export class DomainClientGetDetailProvider {
     _connect?: PrismaClient,
   ): Promise<ClientInfoDto | null> {
     if (authInfoOfBranch.authRole > AuthRole.branch)
-      throw Unauthorized(ErrorCode.Error21);
+      throw Unauthorized(ErrorCode.Error52);
     escapeSqlString(authInfoOfBranch.authId);
     escapeSqlString(businessBranchId);
     escapeSqlString(clientId);
@@ -139,7 +139,7 @@ export class DomainClientGetDetailProvider {
       スタッフだけでなく、自身が担当したアカウントを取得する
     */
     if (authInfoOfSuperStaff.authRole > AuthRole.staff)
-      throw Unauthorized(ErrorCode.Error21);
+      throw Unauthorized(ErrorCode.Error53);
     escapeSqlString(authInfoOfSuperStaff.authId);
     escapeSqlString(businessBranchId);
     escapeSqlString(clientId);

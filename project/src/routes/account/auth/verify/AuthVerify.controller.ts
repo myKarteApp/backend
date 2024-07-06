@@ -8,14 +8,15 @@ import { MainDatasourceProvider } from '@/datasource';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { BadRequest, NotFound } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
-import { CSRF_HEADER, RegisterDto, validateRegisterDto } from '@/shared';
+import { CSRF_HEADER, validateRegisterDto } from '@/shared';
 import { AuthVerifyService } from './AuthVerify.service';
 import { AuthInfo, AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { CsrfSessionProvider } from '@/domain/http/CsrfSession.provider';
 import { _RegisterDto } from './swaggerDto';
 import { ConfigProvider } from '@/config/config.provider';
+import { RequestBody, ResponseBody } from '@/shared/apiSchema/paths';
 
-@ApiTags('AuthVerify')
+@ApiTags('AccountAuthVerify')
 @Controller('/account/auth/verify')
 export class AuthVerifyController {
   constructor(
@@ -185,9 +186,9 @@ export class AuthVerifyController {
   @ApiBody({ type: _RegisterDto })
   @Post('')
   async register(
-    @Body() dto: RegisterDto,
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'register'>,
   ) {
     // 事前処理
     const validator = validateRegisterDto(dto);
@@ -211,7 +212,7 @@ export class AuthVerifyController {
       if (!verifiedAuthInfo) throw NotFound(ErrorCode.Error33);
     });
     // 事後処理
-    const responseBody = {
+    const responseBody: ResponseBody<'register'> = {
       message: 'OK',
     };
     response.status(200).json(responseBody);

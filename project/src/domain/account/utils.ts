@@ -9,9 +9,11 @@ export const AccountFields: string[] = [
   'user.userId',
   'user.birthDay',
   'user.sex',
+  'user.gender',
   'user.familyName',
   'user.givenName',
   'user.tel',
+  'user.address',
   'user.profession',
   'user.createdAt',
 ];
@@ -19,6 +21,14 @@ export const AccountFields: string[] = [
 export const AccountJoiner = `
     AuthInfo AS auth
 INNER JOIN
+    UserInfo AS user
+ON
+    auth.authId = user.authId
+`;
+
+export const AccountLeftOutJoiner = `
+    AuthInfo AS auth
+LEFT OUTER JOIN
     UserInfo AS user
 ON
     auth.authId = user.authId

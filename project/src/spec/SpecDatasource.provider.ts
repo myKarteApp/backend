@@ -43,6 +43,7 @@ export abstract class SpecDatasourceProvider {
         errorCode: ErrorCode.Error17,
       });
     } finally {
+      console.log('！！！！！　閉じた　！！！！');
       await this.connect.$disconnect();
     }
   }

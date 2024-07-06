@@ -16,7 +16,7 @@ export class DomainClientGetListProvider {
     authRole: AuthRole,
     _connect?: PrismaClient,
   ): Promise<ClientInfoDto[]> {
-    if (authRole > AuthRole.admin) throw Unauthorized(ErrorCode.Error21);
+    if (authRole > AuthRole.admin) throw Unauthorized(ErrorCode.Error54);
     escapeSqlString(authId);
 
     const sql = `

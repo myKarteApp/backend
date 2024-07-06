@@ -1,215 +1,215 @@
-// import { ClientInfoDto, CreateDefaultAuthDto, DefaultAuthDto, LoginDefaultAuthDto, RegisterDto, UserInfoDto } from '../dto';
+import {
+  AccountInfoOfDB,
+  CreateAccountInfoDto,
+  CreateDefaultAuthDto,
+  CreateUserInfoDto,
+  LoginDefaultAuthDto,
+  RegisterDto,
+  UserIdListDto,
+} from '../dto';
 
-// export enum HttpMethod {
-//   GET = 'get',
-//   POST = 'post',
-//   PUT = 'put',
-//   DELETE = 'delete',
-// }
+export enum HttpMethod {
+  GET = 'get',
+  POST = 'post',
+  PUT = 'put',
+  DELETE = 'delete',
+}
 
-// export type ApiSchemaInfo = {
-//   /*
-//     デフォルト認証型: /auth/default
-//   */
-//   createAuthDefault: {
-//     endpoint: '/account/auth/default/create';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: CreateDefaultAuthDto;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           // テストで使える
-//           authId: string;
-//         }
-//       };
-//     };
-//   };
-//   verifyAuthDefault: {
-//     endpoint: '/account/auth/default/verify';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: RegisterDto;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//       };
-//     };
-//   };
+export type ApiSchemaInfo = {
+  /*
+      AdminAccount: /admin/{userId}/account
+      userIdは自身のモノ。
+    */
+  createAccountByAdmin: {
+    endpoint: '/admin/{userId}/account/create';
+    method: HttpMethod.POST;
+    request: {
+      body: CreateAccountInfoDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          // テストで使える
+          authId: string;
+        };
+      };
+    };
+  };
+  getAccountListByAdmin: {
+    endpoint: '/admin/{userId}/account';
+    method: HttpMethod.GET;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          // テストで使える
+          accountList: AccountInfoOfDB[];
+        };
+      };
+    };
+  };
+  getAccountDetailByAdmin: {
+    endpoint: '/admin/{userId}/account/{targetUserId}';
+    method: HttpMethod.GET;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          // テストで使える
+          account: AccountInfoOfDB;
+        };
+      };
+    };
+  };
+  updateAccountByAdmin: {
+    endpoint: '/admin/{userId}/account/{targetUserId}/update';
+    method: HttpMethod.PUT;
+    request: {
+      body: Partial<CreateAccountInfoDto>;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+  deleteAccountByAdmin: {
+    endpoint: '/admin/{userId}/account/{targetUserId}/delete';
+    method: HttpMethod.DELETE;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+  bulkDeleteAccountByAdmin: {
+    endpoint: '/admin/{userId}/account/bulkDelete';
+    method: HttpMethod.POST;
+    request: {
+      body: UserIdListDto;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+  /*
+      AuthDefault: /account/auth/default
+      自身の認証情報を作成する
+    */
+  createAuthDefault: {
+    endpoint: '/account/auth/default/create';
+    method: HttpMethod.POST;
+    request: {
+      body: CreateDefaultAuthDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          authId: string;
+        };
+      };
+    };
+  };
+  loginAuthDefault: {
+    endpoint: '/account/auth/default/login';
+    method: HttpMethod.POST;
+    request: {
+      body: LoginDefaultAuthDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          authId: string;
+        };
+      };
+    };
+  };
+  logoutAuthDefault: {
+    endpoint: '/account/auth/default/logout';
+    method: HttpMethod.POST;
+    request: {
+      body: never;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+  /*
+    AccountUser: /account/user
+    自身のユーザー情報を作成する
+*/
+  createAccountUser: {
+    endpoint: '/account/user/:authId/create';
+    method: HttpMethod.POST;
+    request: {
+      body: CreateUserInfoDto;
+    };
+    response: {
+      200: {
+        message: string;
+        data: {
+          userId: string;
+        };
+      };
+    };
+  };
+  /*
+      AccountAuthVerify: /account/auth/verify
+      認証情報を承認する
+    */
+  confirmRegistration: {
+    endpoint: '/account/auth/verify?queryToken={token}';
+    query: {
+      queryToken: string;
+    };
+    method: HttpMethod.GET;
+    request: {
+      body: never;
+    };
+    response: {
+      // NOTE: htmlファイルが返ってくる
+      200: {
+        message: string;
+      };
+    };
+  };
+  register: {
+    endpoint: '/account/auth/verify';
+    method: HttpMethod.POST;
+    request: {
+      body: RegisterDto;
+    };
+    response: {
+      200: {
+        message: string;
+      };
+    };
+  };
+};
 
-//   loginAuthDefault: {
-//     endpoint: '/account/auth/default/login';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: LoginDefaultAuthDto;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           authId: string;
-//         }
-//       };
-//     };
-//   };
-//   logoutAuthDefault: {
-//     endpoint: '/account/auth/default/:authId/logout';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: never;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//       };
-//     };
-//   };
-//   /*
-//     本登録: /account/auth/verify
-//   */
-//   confirmRegistration: {
-//     endpoint: '/account/auth/verify';
-//     method: HttpMethod.GET;
-//     request: {
-//       body: never;
-//     };
-//     // html自体を返す
-//     response: {
-//       200: {
-//         message: string;
-//       };
-//     };
-//   };
-//   register: {
-//     endpoint: '/account/auth/verify';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: RegisterDto;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//       };
-//     };
-//   };
-//   /*
-//     Crud: UserInfo
-//     誰でもできる
-//   */
-//   createUserInfo: {
-//     endpoint: '/account/user/:user/create';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: UserInfoDto;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           userId: string;
-//         }
-//       };
-//     };
-//   };
+export type RequestBody<Action extends keyof ApiSchemaInfo> =
+  ApiSchemaInfo[Action]['request']['body'];
 
-//   /*
-//     Crud Client
-//   */
-
-//   getClientInfoListByAdmin: {
-//     endpoint: '/admin/:authId/client';
-//     method: HttpMethod.GET;
-//     request: {
-//       body: never;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           clientInfoList: ClientInfoDto[],
-//         },
-//       };
-//     };
-//   };
-//   getClientInfoDetailByAdmin: {
-//     endpoint: '/admin/:authId/client/:clientId';
-//     method: HttpMethod.GET;
-//     request: {
-//       body: never;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           clientInfo: ClientInfoDto,
-//         }
-//       };
-//     };
-//   };
-
-//   updateClientInfoDetailByAdmin: {
-//     endpoint: '/admin/:authId/client/:clientId';
-//     method: HttpMethod.PUT;
-//     request: {
-//       body: Partial<ClientInfoDto>;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           accountInfo: ClientInfoDto,
-//         }
-//       };
-//     };
-//   };
-
-//   /*
-//     Adminデフォルト認証型: /admin/auth/default
-//   */
-//   loginAdminAuthDefault: {
-//     endpoint: '/admin/auth/default/login';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: LoginDefaultAuthDto;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//         data: {
-//           authId: string;
-//         }
-//       };
-//     };
-//   };
-//   logoutAdminAuthDefault: {
-//     endpoint: '/admin/auth/default/:authId/logout';
-//     method: HttpMethod.POST;
-//     request: {
-//       body: never;
-//     };
-//     response: {
-//       200: {
-//         message: string;
-//       };
-//     };
-//   };
-
-//   /*
-//     Adminデフォルト認証型: /admin/auth/default
-//   */
-
-// };
-
-// export type RequestBody<Action extends keyof ApiSchemaInfo> =
-//   ApiSchemaInfo[Action]['request']['body'];
-
-// // // // TODO: やりかえる。
-// // export type ResponseBody<Action extends keyof ApiSchemaInfo> =
-// //   | ApiSchemaInfo[Action]['response'][200]['content']['application/json']
-// //   | ApiSchemaInfo[Action]['response']['default']['content']['application/json'];
-
+// // // TODO: やりかえる。
 // export type ResponseBody<Action extends keyof ApiSchemaInfo> =
-//   | ApiSchemaInfo[Action]['response'][200];
+//   | ApiSchemaInfo[Action]['response'][200]['content']['application/json']
+//   | ApiSchemaInfo[Action]['response']['default']['content']['application/json'];
+
+export type ResponseBody<Action extends keyof ApiSchemaInfo> =
+  ApiSchemaInfo[Action]['response'][200];

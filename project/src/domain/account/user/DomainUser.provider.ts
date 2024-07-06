@@ -65,7 +65,24 @@ export class DomainUserProvider {
         userId: userId,
       },
     });
-    if (!result) throw BadRequest(ErrorCode.Error1);
+    if (!result) throw BadRequest(ErrorCode.Error20);
+  }
+  // update
+  public async delete(
+    userIdList: string[],
+    _connect?: PrismaClient,
+  ): Promise<void> {
+    const result = await this.connect(_connect).userInfo.updateMany({
+      where: {
+        userId: {
+          in: userIdList,
+        },
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+    if (userIdList.length !== result.count) throw BadRequest(ErrorCode.Error22);
   }
   protected connect(_connect: PrismaClient | undefined): PrismaClient {
     return _connect ? _connect : this.datasource.connect;

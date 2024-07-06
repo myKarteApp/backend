@@ -1,11 +1,13 @@
 import {
   AccountInfoOfDB,
+  AuthRole,
   SexType,
+  UserIdListDto,
   convertIntoAccountInfoOfDB,
   getEnumValue,
 } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
-import { BadRequest } from '@/utils/error';
+import { Unauthorized } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
 import { escapeSqlString } from '@/utils/sql';
 import { Injectable, Scope } from '@nestjs/common';
@@ -13,14 +15,22 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { AccountFields, AccountJoiner } from './utils';
 
 @Injectable({ scope: Scope.REQUEST })
-export class DomainAccountProvider {
+export class DomainAccountGetListByIdListProvider {
   public datasource: SpecDatasourceProvider;
 
-  async getAccountInfoByUserId(
-    userId: string,
+  async getListByAdmin(
+    authId: string,
+    authRole: AuthRole,
+    dto: UserIdListDto,
     _connect?: PrismaClient,
-  ): Promise<AccountInfoOfDB> {
-    escapeSqlString(userId);
+  ): Promise<AccountInfoOfDB[]> {
+    if (authRole !== AuthRole.admin) throw Unauthorized(ErrorCode.Error49);
+    escapeSqlString(authId);
+    const userIdList: string[] = dto.userIdList.map((userId) => {
+      escapeSqlString(userId);
+      return `'${userId}'`;
+    });
+    const whereInUserIdList = userIdList.join(', ');
 
     const result = await this.connect(_connect).$queryRaw<any[]>(
       Prisma.sql([
@@ -30,16 +40,17 @@ export class DomainAccountProvider {
   FROM 
     ${AccountJoiner}
   WHERE
-    user.userId = "${userId}"
-    AND auth.isDeleted = false
-    AND user.isDeleted = false
-        `,
+    auth.authId <> "${authId}"
+    AND user.userId in (${whereInUserIdList})
+  ORDER BY
+    user.createdAt ASC
+;`,
       ]),
     );
 
-    if (result.length !== 1) throw BadRequest(ErrorCode.Error45);
-    const rec = result[0];
-    return convertIntoAccountInfoOfDB(rec);
+    return result.map((rec) => {
+      return convertIntoAccountInfoOfDB(rec);
+    });
   }
 
   protected connect(_connect: PrismaClient | undefined): PrismaClient {

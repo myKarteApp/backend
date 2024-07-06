@@ -142,3 +142,10 @@ export class _UpdateAccountInfoDto {
   })
   user?: UpdateUserInfo;
 }
+
+export class _BulkDeleteAccountInfoDto {
+  @ApiProperty({
+    example: ['testaaaa'],
+  })
+  userIdList: string[];
+}

@@ -20,7 +20,7 @@ export function escapeSqlString(_value: any) {
       case '"':
       case '\\':
         // TODO: エラーとせずにエスケープする
-        throw BadRequest(ErrorCode.Error1);
+        throw BadRequest(ErrorCode.Error47);
       default:
         return '\\' + char;
     }

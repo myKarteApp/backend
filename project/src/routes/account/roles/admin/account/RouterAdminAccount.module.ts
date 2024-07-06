@@ -10,6 +10,7 @@ import { DomainAccountGetListProvider } from '@/domain/account/DomainAccountGetL
 import { DomainAccountProvider } from '@/domain/account/DomainAccount.provider';
 import { DomainAccountGetDetailProvider } from '@/domain/account/DomainAccountGetDetail.provider';
 import { DomainUserProvider } from '@/domain/account/user/DomainUser.provider';
+import { DomainAccountGetListByIdListProvider } from '@/domain/account/DomainAccountGetListByIdList.provider';
 
 @Module({
   imports: [ConfigModule, AdminDatasourceModule, DomainModule],
@@ -23,6 +24,7 @@ import { DomainUserProvider } from '@/domain/account/user/DomainUser.provider';
     // read
     DomainAccountGetListProvider,
     DomainAccountGetDetailProvider,
+    DomainAccountGetListByIdListProvider,
   ],
   controllers: [AdminAccountController],
 })

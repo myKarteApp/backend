@@ -7,6 +7,7 @@ import { UserService } from './User.service';
 import { Response as ExpressResponse } from 'express';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { _CreateUserInfo } from './swaggerDto';
+import { RequestBody, ResponseBody } from '@/shared/apiSchema/paths';
 
 @ApiTags('AccountUser')
 @Controller('/account/user')
@@ -18,10 +19,10 @@ export class UserController {
   ) {}
   @ApiBody({ type: _CreateUserInfo })
   @Post(':authId/create')
-  async create(
+  async createAccountUser(
     @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'createAccountUser'>,
     @Param('authId') authId: string,
-    @Body() dto: CreateUserInfoDto,
   ) {
     // 自分自身のユーザーを作る
     const newUserId = v4();
@@ -29,7 +30,7 @@ export class UserController {
       await this.userService.createUserInfo(dto, authId, newUserId, connect);
     });
 
-    const responseBody = {
+    const responseBody: ResponseBody<'createAccountUser'> = {
       message: 'OK',
       data: {
         userId: newUserId,

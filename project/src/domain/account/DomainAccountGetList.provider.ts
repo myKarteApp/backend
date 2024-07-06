@@ -1,4 +1,8 @@
-import { AccountInfoFromDB, AuthRole, SexType, getEnumValue } from '@/shared';
+import {
+  AccountInfoOfDB,
+  AuthRole,
+  convertIntoAccountInfoOfDB,
+} from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { Unauthorized } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
@@ -15,8 +19,8 @@ export class DomainAccountGetListProvider {
     authId: string,
     authRole: AuthRole,
     _connect?: PrismaClient,
-  ): Promise<AccountInfoFromDB[]> {
-    if (authRole !== AuthRole.admin) throw Unauthorized(ErrorCode.Error21);
+  ): Promise<AccountInfoOfDB[]> {
+    if (authRole !== AuthRole.admin) throw Unauthorized(ErrorCode.Error48);
     escapeSqlString(authId);
 
     const result = await this.connect(_connect).$queryRaw<any[]>(
@@ -37,26 +41,7 @@ export class DomainAccountGetListProvider {
     );
 
     return result.map((rec) => {
-      return {
-        authId: rec.authId,
-        authRole: rec.authRole,
-        email: rec.email,
-        authType: rec.authType,
-        isVerify: rec.isVerify,
-        isTrial: rec.isTrial,
-        user: {
-          userId: rec.userId,
-          birthDay: rec.birthDay,
-          sex: getEnumValue(SexType, rec.sex),
-          gender: rec.gender,
-          familyName: rec.familyName,
-          givenName: rec.givenName,
-          tel: rec.tel,
-          profession: rec.profession,
-          address: rec.address,
-          createdAt: rec.createdAt,
-        },
-      };
+      return convertIntoAccountInfoOfDB(rec);
     });
   }
 

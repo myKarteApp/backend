@@ -1,7 +1,8 @@
-import { AccountInfoFromDB, CreateAccountInfoDto } from '@/shared';
+import { AccountInfoOfDB, CreateAccountInfoDto, UserIdListDto } from '@/shared';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -16,17 +17,17 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { _CreateAccountInfoDto, _UpdateAccountInfoDto } from './swaggerDto';
-import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
+import {
+  _BulkDeleteAccountInfoDto,
+  _CreateAccountInfoDto,
+  _UpdateAccountInfoDto,
+} from './swaggerDto';
 import { AdminDatasourceProvider } from '@/datasource';
-import { AuthCookieProvider } from '@/domain/http';
-import { DomainClientGetListProvider } from '@/domain/account/roles/client/DomainClientGetList.provider';
-import { BadRequest, NotFound } from '@/utils/error';
+import { BadRequest } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
-import { AuthInfo, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { AdminAccountService } from './AdminAccount.service';
-import { DomainAccountProvider } from '@/domain/account/DomainAccount.provider';
-import { DomainAccountGetListProvider } from '@/domain/account/DomainAccountGetList.provider';
+import { RequestBody, ResponseBody } from '@/shared/apiSchema/paths';
 
 @ApiTags('AdminAccount')
 @Controller('/admin/:userId/account')
@@ -34,20 +35,15 @@ export class AdminAccountController {
   constructor(
     private readonly adminAccountService: AdminAccountService,
     private readonly datasource: AdminDatasourceProvider,
-    // private readonly authCookieProvider: AuthCookieProvider,
-    // private readonly domainAuthDefaultProvider: DomainAuthDefaultProvider,
-    // private readonly domainClientGetListProvider: DomainClientGetListProvider,
-    // private readonly domainAccountProvider: DomainAccountProvider,
-    // private readonly domainClientGetDetailProvider: DomainClientGetDetailProvider,
   ) {}
 
   @ApiBody({ type: _CreateAccountInfoDto })
   @Post('create')
-  public async createAccountDetailByUserId(
+  public async createAccountByAdmin(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'createAccountByAdmin'>,
     @Param('userId') userId: string,
-    @Body() dto: CreateAccountInfoDto,
     @Query('sendEmail') sendEmail?: boolean | false,
   ) {
     await this.datasource.transact(async (connect: PrismaClient) => {
@@ -60,22 +56,25 @@ export class AdminAccountController {
       }
     });
 
-    const responseBody = {
+    const responseBody: ResponseBody<'createAccountByAdmin'> = {
       message: 'OK',
+      data: {
+        authId: 'aa',
+      },
     };
     response.status(200).json(responseBody);
   }
 
   @Get('')
-  public async getAccountList(
+  public async getAccountListByAdmin(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
     @Param('userId') userId: string,
   ) {
-    const accountInfoList: AccountInfoFromDB[] = await this.datasource.transact(
+    const accountList: AccountInfoOfDB[] = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン済みを確認する
-        const myAccount: AccountInfoFromDB =
+        const myAccount: AccountInfoOfDB =
           await this.adminAccountService.validateAuth(request, userId, connect);
         // アカウント情報を全て取得する
         return this.adminAccountService.getAllList(
@@ -86,26 +85,26 @@ export class AdminAccountController {
       },
     );
 
-    const responseBody = {
+    const responseBody: ResponseBody<'getAccountListByAdmin'> = {
       message: 'OK',
       data: {
-        accountInfoList: accountInfoList,
+        accountList: accountList,
       },
     };
     response.status(200).json(responseBody);
   }
 
   @Get(':targetUserId')
-  public async getAccountDetailByUserId(
+  public async getAccountDetailByAdmin(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
     @Param('userId') userId: string,
     @Param('targetUserId') targetUserId: string,
   ) {
-    const accountInfo: AccountInfoFromDB = await this.datasource.transact(
+    const account: AccountInfoOfDB = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン済みを確認する
-        const myAccount: AccountInfoFromDB =
+        const myAccount: AccountInfoOfDB =
           await this.adminAccountService.validateAuth(request, userId, connect);
 
         // アカウント情報を全て取得する
@@ -117,10 +116,10 @@ export class AdminAccountController {
         );
       },
     );
-    const responseBody = {
+    const responseBody: ResponseBody<'getAccountDetailByAdmin'> = {
       message: 'OK',
       data: {
-        accountInfo: accountInfo,
+        account: account,
       },
     };
     response.status(200).json(responseBody);
@@ -128,20 +127,19 @@ export class AdminAccountController {
 
   @ApiBody({ type: _UpdateAccountInfoDto })
   @Put(':targetUserId/update')
-  public async updateAccountDetailByUserId(
-    @Body() dto: Partial<CreateAccountInfoDto>,
+  public async updateAccountByAdmin(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'updateAccountByAdmin'>,
     @Param('userId') userId: string,
     @Param('targetUserId') targetUserId: string,
   ) {
     await this.datasource.transact(async (connect: PrismaClient) => {
       // ログイン済みを確認する
-      const myAccount: AccountInfoFromDB =
+      const myAccount: AccountInfoOfDB =
         await this.adminAccountService.validateAuth(request, userId, connect);
-
       // アカウント情報を更新する
-      this.adminAccountService.update(
+      await this.adminAccountService.update(
         myAccount.authId,
         myAccount.authRole,
         targetUserId,
@@ -149,24 +147,64 @@ export class AdminAccountController {
         connect,
       );
     });
-    const responseBody = {
+
+    const responseBody: ResponseBody<'updateAccountByAdmin'> = {
       message: 'OK',
     };
     response.status(200).json(responseBody);
   }
 
-  // @Delete(':targetUserId/delete')
-  // public async deleteAccountDetailByUserId(
-  //   @Req() request: ExpressRequest,
-  //   @Res() response: ExpressResponse,
-  //   @Param('userId') userId: string,
-  //   @Param('targetUserId') targetUserId: string,
-  // ) {}
+  @Delete(':targetUserId/delete')
+  public async deleteAccountByAdmin(
+    @Req() request: ExpressRequest,
+    @Res() response: ExpressResponse,
+    @Param('userId') userId: string,
+    @Param('targetUserId') targetUserId: string,
+  ) {
+    await this.datasource.transact(async (connect: PrismaClient) => {
+      // ログイン済みを確認する
+      const myAccount: AccountInfoOfDB =
+        await this.adminAccountService.validateAuth(request, userId, connect);
+      // アカウント情報を更新する
+      await this.adminAccountService.delete(
+        myAccount.authId,
+        myAccount.authRole,
+        targetUserId,
+        connect,
+      );
+    });
 
-  // @Post('bulkDelete')
-  // public async bulkDeleteAccountDetailByUserId(
-  //   @Req() request: ExpressRequest,
-  //   @Res() response: ExpressResponse,
-  //   @Body() dto: UserIdListDto,
-  // ) {}
+    const responseBody: ResponseBody<'deleteAccountByAdmin'> = {
+      message: 'OK',
+    };
+    response.status(200).json(responseBody);
+  }
+
+  @ApiBody({ type: _BulkDeleteAccountInfoDto })
+  @Post('bulkDelete')
+  public async bulkDeleteAccountByAdmin(
+    @Req() request: ExpressRequest,
+    @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'bulkDeleteAccountByAdmin'>,
+    @Param('userId') userId: string,
+  ) {
+    if (Object.keys(dto.userIdList).length === 0)
+      throw BadRequest(ErrorCode.Error42);
+    await this.datasource.transact(async (connect: PrismaClient) => {
+      // ログイン済みを確認する
+      const myAccount: AccountInfoOfDB =
+        await this.adminAccountService.validateAuth(request, userId, connect);
+      // アカウント情報を更新する
+      await this.adminAccountService.bulkDelete(
+        myAccount.authId,
+        myAccount.authRole,
+        dto,
+        connect,
+      );
+    });
+    const responseBody: ResponseBody<'bulkDeleteAccountByAdmin'> = {
+      message: 'OK',
+    };
+    response.status(200).json(responseBody);
+  }
 }

@@ -30,25 +30,7 @@ export class DomainAuthDefaultProvider {
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.hashSalt);
   }
-  // update
-  public async update(
-    authId: string,
-    dto: Partial<CreateAuthInfoDtoForAccount>,
-    _connect?: PrismaClient,
-  ): Promise<void> {
-    const data = removeUndefined<CreateAuthInfoDtoForAccount>(dto);
-    if (Object.keys(data).length === 0) return;
 
-    const result: AuthInfo | null = await this.connect(
-      _connect,
-    ).authInfo.update({
-      data: data,
-      where: {
-        authId: authId,
-      },
-    });
-    if (!result) throw BadRequest(ErrorCode.Error1);
-  }
   /*
     read
   */
@@ -129,7 +111,43 @@ export class DomainAuthDefaultProvider {
       },
     });
   }
+  // update
+  public async update(
+    authId: string,
+    dto: Partial<CreateAuthInfoDtoForAccount>,
+    _connect?: PrismaClient,
+  ): Promise<void> {
+    const data = removeUndefined<CreateAuthInfoDtoForAccount>(dto);
+    if (Object.keys(data).length === 0) return;
 
+    const result: AuthInfo | null = await this.connect(
+      _connect,
+    ).authInfo.update({
+      data: data,
+      where: {
+        authId: authId,
+      },
+    });
+    if (!result) throw BadRequest(ErrorCode.Error17);
+  }
+
+  // delete
+  public async delete(
+    authIdList: string[],
+    _connect?: PrismaClient,
+  ): Promise<void> {
+    const result = await this.connect(_connect).authInfo.updateMany({
+      where: {
+        authId: {
+          in: authIdList,
+        },
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+    if (authIdList.length !== result.count) throw BadRequest(ErrorCode.Error18);
+  }
   /*
     other
   */

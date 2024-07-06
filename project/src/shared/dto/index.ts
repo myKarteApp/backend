@@ -1,5 +1,6 @@
 import { AuthRole, AuthType } from '../enum';
 import { Validator, validateEmail, validatePassword } from '../utils/validator';
+import { getEnumValue } from './utils';
 export * from './utils';
 
 // NOTE: 先頭アンバー付きがベースのtype。dtoはフロントとバックのインターフェース。
@@ -102,10 +103,40 @@ export type UserIdListDto = {
 /* =======================
 アカウント系
 ======================= */
-export type AccountInfoFromDB = Omit<_DefaultAuth, 'password'> & {
-  user: Omit<_UserInfo, 'authId'>;
+export type AccountInfoOfDB = Omit<_DefaultAuth, 'password'> & {
+  user?: Omit<_UserInfo, 'authId'>;
 };
-
+export const convertIntoAccountInfoOfDB = (rec: {
+  [key: string]: any;
+}): AccountInfoOfDB => {
+  const data = {
+    authId: rec.authId,
+    authRole: rec.authRole,
+    email: rec.email,
+    authType: rec.authType,
+    isVerify: rec.isVerify,
+    isTrial: rec.isTrial,
+  };
+  if (rec.userId) {
+    return {
+      ...data,
+      user: {
+        userId: rec.userId,
+        birthDay: rec.birthDay,
+        sex: getEnumValue(SexType, rec.sex),
+        gender: rec.gender,
+        familyName: rec.familyName,
+        givenName: rec.givenName,
+        tel: rec.tel,
+        profession: rec.profession,
+        address: rec.address,
+        createdAt: rec.createdAt,
+      },
+    };
+  } else {
+    return data;
+  }
+};
 export type AccountInfoDto = Omit<_DefaultAuth, 'authId' | 'password'> & {
   user: Omit<_UserInfo, 'authId'>;
 };

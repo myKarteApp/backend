@@ -23,11 +23,14 @@ import { MailService } from '@/domain/email/mail.service';
 import { ApiTags, ApiBody } from '@nestjs/swagger';
 import { _DefaultAuthDto } from './swaggerDto';
 import { ConfigProvider } from '@/config/config.provider';
+import { ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
+import { RequestBody, ResponseBody } from '@/shared/apiSchema/paths';
 
 @ApiTags('AuthDefault')
 @Controller('/account/auth/default')
 // extends PassportSerializer
-export class AuthDefaultController implements SpecLoginController {
+export class AuthDefaultController {
   // 自分人の認証情報を管理する
   constructor(
     private readonly authService: AuthDefaultService,
@@ -39,10 +42,10 @@ export class AuthDefaultController implements SpecLoginController {
 
   @ApiBody({ type: _DefaultAuthDto })
   @Post('create')
-  async create(
-    @Body() dto: CreateDefaultAuthDto,
+  async createAuthDefault(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'createAuthDefault'>,
   ) {
     // 事前準備
     const validator: Validator = validateDefaultAuth(dto);
@@ -87,7 +90,7 @@ export class AuthDefaultController implements SpecLoginController {
     });
 
     // 事後処理
-    const responseBody = {
+    const responseBody: ResponseBody<'createAuthDefault'> = {
       message: 'OK',
       data: {
         authId: newAuthId,
@@ -98,9 +101,9 @@ export class AuthDefaultController implements SpecLoginController {
 
   @ApiBody({ type: _DefaultAuthDto })
   @Post('login')
-  async login(
-    @Body() dto: LoginDefaultAuthDto,
+  async loginAuthDefault(
     @Res() response: ExpressResponse,
+    @Body() dto: RequestBody<'loginAuthDefault'>,
   ): Promise<void> {
     // ログイン用セッションIDを設定する
 
@@ -132,7 +135,7 @@ export class AuthDefaultController implements SpecLoginController {
       },
     );
     // 事後処理
-    const responseBody = {
+    const responseBody: ResponseBody<'loginAuthDefault'> = {
       message: 'OK',
       data: {
         authId: authId,
@@ -142,7 +145,7 @@ export class AuthDefaultController implements SpecLoginController {
   }
 
   @Post('logout')
-  async logout(
+  async logoutAuthDefault(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
   ): Promise<void> {
@@ -157,7 +160,7 @@ export class AuthDefaultController implements SpecLoginController {
       );
     });
 
-    const responseBody = {
+    const responseBody: ResponseBody<'logoutAuthDefault'> = {
       message: 'OK',
     };
     response.status(200).json(responseBody);

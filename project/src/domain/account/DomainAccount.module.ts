@@ -6,6 +6,7 @@ import { DomainAuthModule } from './auth/DomainAuth.module';
 import { DomainAccountProvider } from './DomainAccount.provider';
 import { DomainAccountGetListProvider } from './DomainAccountGetList.provider';
 import { DomainAccountGetDetailProvider } from './DomainAccountGetDetail.provider';
+import { DomainAccountGetListByIdListProvider } from './DomainAccountGetListByIdList.provider';
 
 @Module({
   imports: [],
@@ -13,6 +14,7 @@ import { DomainAccountGetDetailProvider } from './DomainAccountGetDetail.provide
     DomainAccountProvider,
     DomainAccountGetListProvider,
     DomainAccountGetDetailProvider,
+    DomainAccountGetListByIdListProvider,
     // 内部
     DomainAuthModule,
     DomainClientModule,
@@ -23,6 +25,7 @@ import { DomainAccountGetDetailProvider } from './DomainAccountGetDetail.provide
     DomainAccountProvider,
     DomainAccountGetListProvider,
     DomainAccountGetDetailProvider,
+    DomainAccountGetListByIdListProvider,
     // 内部
     DomainAuthModule,
     DomainClientModule,
