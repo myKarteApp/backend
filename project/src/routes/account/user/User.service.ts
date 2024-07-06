@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { CreateUserInfo, UserInfoDto } from '@/shared';
+import { CreateUserInfoDto } from '@/shared';
 import { MainDatasourceProvider } from '@/datasource';
 import { DomainUserProvider } from '@/domain/account/user/DomainUser.provider';
 
@@ -16,7 +16,7 @@ export class UserService {
     create
   */
   public async createUserInfo(
-    dto: CreateUserInfo,
+    dto: CreateUserInfoDto,
     authId: string,
     newUserId: string,
     _connect?: PrismaClient,

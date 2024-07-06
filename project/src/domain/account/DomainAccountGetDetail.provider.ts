@@ -1,10 +1,4 @@
-import {
-  AccountInfo,
-  AccountInfoDto,
-  AuthRole,
-  SexType,
-  getEnumValue,
-} from '@/shared';
+import { AccountInfoFromDB, AuthRole, SexType, getEnumValue } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { BadRequest, NotFound, Unauthorized, Unexpected } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
@@ -22,9 +16,10 @@ export class DomainAccountGetDetailProvider {
     authRole: AuthRole,
     targetUserId: string,
     _connect?: PrismaClient,
-  ): Promise<AccountInfo> {
+  ): Promise<AccountInfoFromDB> {
     if (authRole !== AuthRole.admin) throw Unauthorized(ErrorCode.Error21);
     escapeSqlString(authId);
+    escapeSqlString(targetUserId);
 
     const result = await this.connect(_connect).$queryRaw<any[]>(
       Prisma.sql([

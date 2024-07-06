@@ -1,4 +1,4 @@
-import { AccountInfo, AuthRole, SexType, getEnumValue } from '@/shared';
+import { AccountInfoFromDB, AuthRole, SexType, getEnumValue } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { Unauthorized } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
@@ -15,7 +15,7 @@ export class DomainAccountGetListProvider {
     authId: string,
     authRole: AuthRole,
     _connect?: PrismaClient,
-  ): Promise<AccountInfo[]> {
+  ): Promise<AccountInfoFromDB[]> {
     if (authRole !== AuthRole.admin) throw Unauthorized(ErrorCode.Error21);
     escapeSqlString(authId);
 

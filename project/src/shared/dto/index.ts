@@ -1,53 +1,48 @@
 import { AuthRole, AuthType } from '../enum';
-import { Validator } from '../utils/error';
+import { Validator, validateEmail, validatePassword } from '../utils/validator';
+export * from './utils';
 
-export function getEnumValue<T extends { [key: string]: string }>(
-  enumType: T,
-  value: string,
-): T[keyof T] {
-  const enumValues = Object.values(enumType) as string[];
-  if (enumValues.includes(value)) {
-    return value as T[keyof T];
-  } else {
-    throw new Error(`Value '${value}' does not exist in enum`);
-  }
-}
-
+// NOTE: 先頭アンバー付きがベースのtype。dtoはフロントとバックのインターフェース。
+/*
+  その他
+*/
 export type ResponseOK = {
   message: string;
 };
 
-export type DefaultAuthDto = {
-  authId?: string; //作成時点ではnullでやってくる
-  email: string;
-  password: string;
-  authType?: string;
-  authRole?: number;
-  isVerify?: boolean;
-  isTrial?: boolean;
+export type DefaultColumns = 'isDeleted' | 'createdAt' | 'updatedAt';
+export type AddDefaultColumns = {
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
-export const validateDefaultAuthDto = (dto: DefaultAuthDto): Validator => {
-  const validator = new Validator();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dto.email))
-    validator.pushError('email', 'emailを正しく入力しください。');
-  if (Object.keys(dto.password).length < 8)
-    validator.pushError('password', '8文字以上で記載してください。');
+/* =======================
+認証系
+======================= */
+export type _DefaultAuth = {
+  authId: string;
+  email: string;
+  password: string;
+  authType: AuthType;
+  authRole: AuthRole;
+  isVerify: boolean;
+  isTrial: boolean;
+};
 
-  if (dto.authType) {
-    const authType = Object.keys(AuthType).filter((key) =>
-      isNaN(Number(AuthType[key])),
-    );
-    if (!authType.includes(dto.authType))
-      validator.pushError('authType', '認証形式が不正です。');
-  }
-  if (dto.authRole) {
-    const authRole = Object.keys(AuthRole)
-      .filter((key) => !isNaN(Number(AuthRole[key])))
-      .map((key) => Number(AuthRole[key]));
-    if (!authRole.includes(dto.authRole))
-      validator.pushError('authRoles', '認可が不正です。');
-  }
+export type CreateDefaultAuthDto = {
+  email: string;
+  password: string;
+};
+
+export type LoginDefaultAuthDto = CreateDefaultAuthDto;
+
+export const validateDefaultAuth = (
+  dto: Partial<CreateDefaultAuthDto | LoginDefaultAuthDto>,
+): Validator => {
+  const validator = new Validator();
+  validateEmail(validator, dto.email);
+  validatePassword(validator, dto.password);
   return validator;
 };
 
@@ -60,15 +55,9 @@ export type RegisterDto = {
 
 export const validateRegisterDto = (dto: Partial<RegisterDto>): Validator => {
   const validator = new Validator();
-  const { email, password, passCode, queryToken } = dto;
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email ? email : ''))
-    validator.pushError('email', 'emailを正しく入力しください。');
-  if (Object.keys(password ? password : '').length < 8)
-    validator.pushError(
-      'password',
-      'パスワードは8文字以上で記載してください。',
-    );
+  const { passCode, queryToken } = dto;
+  validateEmail(validator, dto.email);
+  validatePassword(validator, dto.password);
   if (Object.keys(passCode ? passCode : '').length !== 6)
     validator.pushError(
       'passCode',
@@ -79,13 +68,16 @@ export const validateRegisterDto = (dto: Partial<RegisterDto>): Validator => {
   return validator;
 };
 
+/* =======================
+ユーザー情報系
+======================= */
 export enum SexType {
   male = 'male',
   female = 'female',
 }
 
-export type UserInfoDto = {
-  userId?: string; //作成時点ではnullでやってくる
+export type _UserInfo = {
+  userId: string;
   authId: string;
   birthDay: Date;
   sex: SexType;
@@ -95,27 +87,27 @@ export type UserInfoDto = {
   address: string;
   tel: string;
   profession: string;
-  createdAt?: Date; //作成時点ではnullでやってくる
+  createdAt: Date;
 };
 
-export type CreateUserInfo = {
-  birthDay: Date;
-  sex: SexType;
-  gender: string;
-  familyName: string;
-  givenName: string;
-  address: string;
-  tel: string;
-  profession: string;
+export type CreateUserInfoDto = Omit<
+  _UserInfo,
+  'userId' | 'authId' | 'createdAt'
+>;
+
+export type UserIdListDto = {
+  userIdList: string[];
 };
 
-export type AccountInfoDto = Omit<DefaultAuthDto, 'authId' | 'password'> & {
-  user: Omit<UserInfoDto, 'authId'>;
+/* =======================
+アカウント系
+======================= */
+export type AccountInfoFromDB = Omit<_DefaultAuth, 'password'> & {
+  user: Omit<_UserInfo, 'authId'>;
 };
 
-export type AccountInfo = AccountInfoDto & {
-  authId: string;
-  authRole: AuthRole;
+export type AccountInfoDto = Omit<_DefaultAuth, 'authId' | 'password'> & {
+  user: Omit<_UserInfo, 'authId'>;
 };
 
 export type ClientInfoDto = Omit<AccountInfoDto, 'userId'> & {
@@ -128,29 +120,7 @@ export type JwsTokenSchema = {
   isExpired: boolean;
 };
 
-export type CreateAccountInfoDto = {
-  // AuthInfo
-  email: string;
-  password: string;
-  authType: string;
-  authRole: number;
-  isVerify: boolean;
-  isTrial: boolean;
-  user: {
-    // UserInfo
-    birthDay: Date;
-    sex: SexType;
-    gender: string;
-    familyName: string;
-    givenName: string;
-    address: string;
-    tel: string;
-    profession: string;
-  };
-};
-
-export type DefaultColumns = 'isDeleted' | 'createdAt' | 'updatedAt';
-
-export type UserIdListDto = {
-  userIdList: string[];
+export type CreateAuthInfoDtoForAccount = Omit<_DefaultAuth, 'authId'>;
+export type CreateAccountInfoDto = CreateAuthInfoDtoForAccount & {
+  user: CreateUserInfoDto;
 };

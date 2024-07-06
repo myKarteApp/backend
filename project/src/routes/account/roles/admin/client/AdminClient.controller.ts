@@ -3,9 +3,6 @@ import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainA
 import { DomainClientGetDetailProvider } from '@/domain/account/roles/client/DomainClientGetDetail.provider';
 import { DomainClientGetListProvider } from '@/domain/account/roles/client/DomainClientGetList.provider';
 import { AuthCookieProvider } from '@/domain/http';
-import { ClientInfoDto, ResponseBody } from '@/shared';
-import { NotFound } from '@/utils/error';
-import { ErrorCode } from '@/utils/errorCode';
 import { Controller, Get, Param, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthInfo, PrismaClient } from '@prisma/client';

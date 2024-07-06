@@ -1,4 +1,4 @@
-import { AccountInfo, SexType, getEnumValue } from '@/shared';
+import { AccountInfoFromDB, SexType, getEnumValue } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { BadRequest } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
@@ -14,7 +14,7 @@ export class DomainAccountProvider {
   async getAccountInfoByUserId(
     userId: string,
     _connect?: PrismaClient,
-  ): Promise<AccountInfo> {
+  ): Promise<AccountInfoFromDB> {
     escapeSqlString(userId);
 
     const result = await this.connect(_connect).$queryRaw<any[]>(

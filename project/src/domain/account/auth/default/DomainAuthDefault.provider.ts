@@ -1,8 +1,15 @@
 import { Injectable, Scope } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthInfo, AuthType, PrismaClient } from '@prisma/client';
-import { AuthRole, DefaultColumns } from '@/shared';
+import {
+  AuthRole,
+  CreateAuthInfoDtoForAccount,
+  DefaultColumns,
+  removeUndefined,
+} from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
+import { BadRequest } from '@/utils/error';
+import { ErrorCode } from '@/utils/errorCode';
 
 @Injectable({ scope: Scope.REQUEST })
 export class DomainAuthDefaultProvider {
@@ -22,6 +29,25 @@ export class DomainAuthDefaultProvider {
   }
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.hashSalt);
+  }
+  // update
+  public async update(
+    authId: string,
+    dto: Partial<CreateAuthInfoDtoForAccount>,
+    _connect?: PrismaClient,
+  ): Promise<void> {
+    const data = removeUndefined<CreateAuthInfoDtoForAccount>(dto);
+    if (Object.keys(data).length === 0) return;
+
+    const result: AuthInfo | null = await this.connect(
+      _connect,
+    ).authInfo.update({
+      data: data,
+      where: {
+        authId: authId,
+      },
+    });
+    if (!result) throw BadRequest(ErrorCode.Error1);
   }
   /*
     read

@@ -1,6 +1,6 @@
 import { AdminDatasourceProvider } from '@/datasource';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
-import { AuthRole, DefaultAuthDto } from '@/shared';
+import { AuthRole } from '@/shared';
 import { Injectable } from '@nestjs/common';
 import { AuthInfo, AuthType, PrismaClient } from '@prisma/client';
 

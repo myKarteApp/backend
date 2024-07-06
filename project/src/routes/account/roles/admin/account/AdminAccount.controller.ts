@@ -1,15 +1,7 @@
-import {
-  AccountInfo,
-  AccountInfoDto,
-  AuthRole,
-  CreateAccountInfoDto,
-  ResponseBody,
-  UserIdListDto,
-} from '@/shared';
+import { AccountInfoFromDB, CreateAccountInfoDto } from '@/shared';
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Post,
@@ -24,7 +16,7 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { _CreateAccountInfoDto, _PutAccountInfoDto } from './swaggerDto';
+import { _CreateAccountInfoDto, _UpdateAccountInfoDto } from './swaggerDto';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { AdminDatasourceProvider } from '@/datasource';
 import { AuthCookieProvider } from '@/domain/http';
@@ -49,21 +41,42 @@ export class AdminAccountController {
     // private readonly domainClientGetDetailProvider: DomainClientGetDetailProvider,
   ) {}
 
+  @ApiBody({ type: _CreateAccountInfoDto })
+  @Post('create')
+  public async createAccountDetailByUserId(
+    @Req() request: ExpressRequest,
+    @Res() response: ExpressResponse,
+    @Param('userId') userId: string,
+    @Body() dto: CreateAccountInfoDto,
+    @Query('sendEmail') sendEmail?: boolean | false,
+  ) {
+    await this.datasource.transact(async (connect: PrismaClient) => {
+      // ログイン済みを確認する
+      await this.adminAccountService.validateAuth(request, userId, connect);
+
+      await this.adminAccountService.create(dto, connect);
+      if (sendEmail) {
+        // TODO: メールを送信する
+      }
+    });
+
+    const responseBody = {
+      message: 'OK',
+    };
+    response.status(200).json(responseBody);
+  }
+
   @Get('')
   public async getAccountList(
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
     @Param('userId') userId: string,
   ) {
-    const accountInfoList: AccountInfo[] = await this.datasource.transact(
+    const accountInfoList: AccountInfoFromDB[] = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン済みを確認する
-        const myAccount: AccountInfo =
-          await this.adminAccountService.getAccountInfoByUserId(
-            request,
-            userId,
-            connect,
-          );
+        const myAccount: AccountInfoFromDB =
+          await this.adminAccountService.validateAuth(request, userId, connect);
         // アカウント情報を全て取得する
         return this.adminAccountService.getAllList(
           myAccount.authId,
@@ -89,15 +102,11 @@ export class AdminAccountController {
     @Param('userId') userId: string,
     @Param('targetUserId') targetUserId: string,
   ) {
-    const accountInfo: AccountInfo = await this.datasource.transact(
+    const accountInfo: AccountInfoFromDB = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン済みを確認する
-        const myAccount: AccountInfo =
-          await this.adminAccountService.getAccountInfoByUserId(
-            request,
-            userId,
-            connect,
-          );
+        const myAccount: AccountInfoFromDB =
+          await this.adminAccountService.validateAuth(request, userId, connect);
 
         // アカウント情報を全て取得する
         return this.adminAccountService.getDetail(
@@ -117,36 +126,7 @@ export class AdminAccountController {
     response.status(200).json(responseBody);
   }
 
-  @ApiBody({ type: _CreateAccountInfoDto })
-  @Post('create')
-  public async createAccountDetailByUserId(
-    @Req() request: ExpressRequest,
-    @Res() response: ExpressResponse,
-    @Param('userId') userId: string,
-    @Body() dto: CreateAccountInfoDto,
-    @Query('sendEmail') sendEmail?: boolean | false,
-  ) {
-    await this.datasource.transact(async (connect: PrismaClient) => {
-      // ログイン済みを確認する
-      await this.adminAccountService.getAccountInfoByUserId(
-        request,
-        userId,
-        connect,
-      );
-
-      await this.adminAccountService.create(dto, connect);
-      if (sendEmail) {
-        // TODO: メールを送信する
-      }
-    });
-
-    const responseBody = {
-      message: 'OK',
-    };
-    response.status(200).json(responseBody);
-  }
-
-  @ApiBody({ type: _PutAccountInfoDto })
+  @ApiBody({ type: _UpdateAccountInfoDto })
   @Put(':targetUserId/update')
   public async updateAccountDetailByUserId(
     @Body() dto: Partial<CreateAccountInfoDto>,
@@ -154,20 +134,39 @@ export class AdminAccountController {
     @Res() response: ExpressResponse,
     @Param('userId') userId: string,
     @Param('targetUserId') targetUserId: string,
-  ) {}
+  ) {
+    await this.datasource.transact(async (connect: PrismaClient) => {
+      // ログイン済みを確認する
+      const myAccount: AccountInfoFromDB =
+        await this.adminAccountService.validateAuth(request, userId, connect);
 
-  @Delete(':targetUserId/delete')
-  public async deleteAccountDetailByUserId(
-    @Req() request: ExpressRequest,
-    @Res() response: ExpressResponse,
-    @Param('userId') userId: string,
-    @Param('targetUserId') targetUserId: string,
-  ) {}
+      // アカウント情報を更新する
+      this.adminAccountService.update(
+        myAccount.authId,
+        myAccount.authRole,
+        targetUserId,
+        dto,
+        connect,
+      );
+    });
+    const responseBody = {
+      message: 'OK',
+    };
+    response.status(200).json(responseBody);
+  }
 
-  @Post('bulkDelete')
-  public async bulkDeleteAccountDetailByUserId(
-    @Req() request: ExpressRequest,
-    @Res() response: ExpressResponse,
-    @Body() dto: UserIdListDto,
-  ) {}
+  // @Delete(':targetUserId/delete')
+  // public async deleteAccountDetailByUserId(
+  //   @Req() request: ExpressRequest,
+  //   @Res() response: ExpressResponse,
+  //   @Param('userId') userId: string,
+  //   @Param('targetUserId') targetUserId: string,
+  // ) {}
+
+  // @Post('bulkDelete')
+  // public async bulkDeleteAccountDetailByUserId(
+  //   @Req() request: ExpressRequest,
+  //   @Res() response: ExpressResponse,
+  //   @Body() dto: UserIdListDto,
+  // ) {}
 }

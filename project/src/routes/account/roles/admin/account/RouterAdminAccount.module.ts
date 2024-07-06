@@ -15,11 +15,14 @@ import { DomainUserProvider } from '@/domain/account/user/DomainUser.provider';
   imports: [ConfigModule, AdminDatasourceModule, DomainModule],
   providers: [
     AdminAccountService,
-    DomainAuthDefaultProvider,
+    // 認証用
     DomainAccountProvider,
+    // create
+    DomainAuthDefaultProvider,
+    DomainUserProvider,
+    // read
     DomainAccountGetListProvider,
     DomainAccountGetDetailProvider,
-    DomainUserProvider,
   ],
   controllers: [AdminAccountController],
 })

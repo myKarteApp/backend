@@ -1,7 +1,9 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { PrismaClient, UserInfo } from '@prisma/client';
-import { DefaultColumns } from '@/shared';
+import { CreateUserInfoDto, DefaultColumns, removeUndefined } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
+import { BadRequest } from '@/utils/error';
+import { ErrorCode } from '@/utils/errorCode';
 
 @Injectable({ scope: Scope.REQUEST })
 export class DomainUserProvider {
@@ -44,6 +46,27 @@ export class DomainUserProvider {
   //     _connect,
   //   );
   // }
+  // update
+  public async update(
+    authId: string,
+    userId: string,
+    dto: Partial<CreateUserInfoDto>,
+    _connect?: PrismaClient,
+  ): Promise<void> {
+    const data = removeUndefined<CreateUserInfoDto>(dto);
+    if (Object.keys(data).length === 0) return;
+
+    const result: UserInfo | null = await this.connect(
+      _connect,
+    ).userInfo.update({
+      data: data,
+      where: {
+        authId: authId,
+        userId: userId,
+      },
+    });
+    if (!result) throw BadRequest(ErrorCode.Error1);
+  }
   protected connect(_connect: PrismaClient | undefined): PrismaClient {
     return _connect ? _connect : this.datasource.connect;
   }

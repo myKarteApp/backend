@@ -1,5 +1,5 @@
 import { MainDatasourceProvider } from '@/datasource';
-import { CreateUserInfo, ResponseBody } from '@/shared';
+import { CreateUserInfoDto } from '@/shared';
 import { Body, Controller, Param, Post, Res } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { v4 } from 'uuid';
@@ -21,7 +21,7 @@ export class UserController {
   async create(
     @Res() response: ExpressResponse,
     @Param('authId') authId: string,
-    @Body() dto: CreateUserInfo,
+    @Body() dto: CreateUserInfoDto,
   ) {
     // 自分自身のユーザーを作る
     const newUserId = v4();
@@ -29,7 +29,7 @@ export class UserController {
       await this.userService.createUserInfo(dto, authId, newUserId, connect);
     });
 
-    const responseBody: ResponseBody<'createUserInfo'> = {
+    const responseBody = {
       message: 'OK',
       data: {
         userId: newUserId,

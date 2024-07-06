@@ -5,7 +5,7 @@ import {
   AuthVerifyOneTimePass,
   PrismaClient,
 } from '@prisma/client';
-import { AuthRole, DefaultAuthDto } from '@/shared';
+import { AuthRole, CreateDefaultAuthDto } from '@/shared';
 import { MainDatasourceProvider } from '@/datasource';
 import { Request as ExpressRequest } from 'express';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
@@ -24,8 +24,9 @@ export class AuthDefaultService {
     AuthInfo
   ==================== */
   public async createAuthInfo(
-    dto: DefaultAuthDto,
+    dto: CreateDefaultAuthDto,
     newAuthId: string,
+    authRole: AuthRole,
     _connect?: PrismaClient,
   ): Promise<void> {
     await this.authDefaultProvider.createAuthInfo(
@@ -34,7 +35,7 @@ export class AuthDefaultService {
         email: dto.email,
         password: dto.password,
         authType: AuthType.default,
-        authRole: dto.authRole ? dto.authRole : AuthRole.client,
+        authRole: authRole,
         isVerify: false,
         isTrial: false,
       },

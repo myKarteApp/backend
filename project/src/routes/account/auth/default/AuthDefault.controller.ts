@@ -1,4 +1,8 @@
-import { DefaultAuthDto, validateDefaultAuthDto } from '@/shared/dto';
+import {
+  CreateDefaultAuthDto,
+  LoginDefaultAuthDto,
+  validateDefaultAuth,
+} from '@/shared/dto';
 import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { BadRequest, NotFound, Unexpected } from '@/utils/error';
@@ -8,7 +12,7 @@ import {
   Response as ExpressResponse,
 } from 'express';
 
-import { AuthRole, ResponseBody, Validator } from '@/shared';
+import { AuthRole, Validator } from '@/shared';
 import { AuthCookieProvider } from '@/domain/http';
 import { MainDatasourceProvider } from '@/datasource';
 
@@ -24,6 +28,7 @@ import { ConfigProvider } from '@/config/config.provider';
 @Controller('/account/auth/default')
 // extends PassportSerializer
 export class AuthDefaultController implements SpecLoginController {
+  // 自分人の認証情報を管理する
   constructor(
     private readonly authService: AuthDefaultService,
     private readonly datasource: MainDatasourceProvider,
@@ -35,30 +40,25 @@ export class AuthDefaultController implements SpecLoginController {
   @ApiBody({ type: _DefaultAuthDto })
   @Post('create')
   async create(
-    @Body() dto: DefaultAuthDto,
+    @Body() dto: CreateDefaultAuthDto,
     @Req() request: ExpressRequest,
     @Res() response: ExpressResponse,
   ) {
     // 事前準備
-    const validator: Validator = validateDefaultAuthDto(dto);
+    const validator: Validator = validateDefaultAuth(dto);
     if (validator.hasError()) {
       throw BadRequest(ErrorCode.Error38);
     }
-    if (dto.authRole && dto.authRole !== AuthRole.client)
-      // 認証情報作成時では、認可ロールをclientに固定する。
-      throw BadRequest(ErrorCode.Error42);
     // メイン処理
     const newAuthId = v4();
     await this.datasource.transact(async (connect: PrismaClient) => {
       // 認証情報を作成する
-      await this.authService.createAuthInfo(dto, newAuthId, connect);
-      // OTPを保存する
-      const authVerifyOneTimePassId = await this.authService.createOneTimePass(
+      await this.authService.createAuthInfo(
+        dto,
         newAuthId,
-        request,
+        AuthRole.client,
         connect,
       );
-
       if (this.configProvider.IS_LOCAL) {
         const verifiedAuthInfo = await this.authService.verifyAuth(
           newAuthId,
@@ -67,6 +67,12 @@ export class AuthDefaultController implements SpecLoginController {
         if (!verifiedAuthInfo) throw Unexpected(ErrorCode.Error28);
         return;
       }
+      // OTPを保存する
+      const authVerifyOneTimePassId = await this.authService.createOneTimePass(
+        newAuthId,
+        request,
+        connect,
+      );
       const authVerifyOneTimePass: AuthVerifyOneTimePass | null =
         await this.authService.findOneTimePassById(
           authVerifyOneTimePassId,
@@ -81,7 +87,7 @@ export class AuthDefaultController implements SpecLoginController {
     });
 
     // 事後処理
-    const responseBody: ResponseBody<'createAuthDefault'> = {
+    const responseBody = {
       message: 'OK',
       data: {
         authId: newAuthId,
@@ -93,13 +99,13 @@ export class AuthDefaultController implements SpecLoginController {
   @ApiBody({ type: _DefaultAuthDto })
   @Post('login')
   async login(
-    @Body() dto: DefaultAuthDto,
+    @Body() dto: LoginDefaultAuthDto,
     @Res() response: ExpressResponse,
   ): Promise<void> {
     // ログイン用セッションIDを設定する
 
     // 事前準備
-    const validator: Validator = validateDefaultAuthDto(dto);
+    const validator: Validator = validateDefaultAuth(dto);
     if (validator.hasError()) {
       throw BadRequest(ErrorCode.Error39);
     }
@@ -126,7 +132,7 @@ export class AuthDefaultController implements SpecLoginController {
       },
     );
     // 事後処理
-    const responseBody: ResponseBody<'loginAuthDefault'> = {
+    const responseBody = {
       message: 'OK',
       data: {
         authId: authId,
@@ -151,7 +157,7 @@ export class AuthDefaultController implements SpecLoginController {
       );
     });
 
-    const responseBody: ResponseBody<'logoutAuthDefault'> = {
+    const responseBody = {
       message: 'OK',
     };
     response.status(200).json(responseBody);

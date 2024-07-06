@@ -8,12 +8,7 @@ import { MainDatasourceProvider } from '@/datasource';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { BadRequest, NotFound } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
-import {
-  CSRF_HEADER,
-  RegisterDto,
-  ResponseBody,
-  validateRegisterDto,
-} from '@/shared';
+import { CSRF_HEADER, RegisterDto, validateRegisterDto } from '@/shared';
 import { AuthVerifyService } from './AuthVerify.service';
 import { AuthInfo, AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { CsrfSessionProvider } from '@/domain/http/CsrfSession.provider';
@@ -216,7 +211,7 @@ export class AuthVerifyController {
       if (!verifiedAuthInfo) throw NotFound(ErrorCode.Error33);
     });
     // 事後処理
-    const responseBody: ResponseBody<'register'> = {
+    const responseBody = {
       message: 'OK',
     };
     response.status(200).json(responseBody);
