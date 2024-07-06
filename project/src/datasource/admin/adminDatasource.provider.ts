@@ -12,7 +12,7 @@ export class AdminDatasourceProvider extends SpecDatasourceProvider {
     return new PrismaClient({
       datasourceUrl: datasourceUrl,
       errorFormat: 'pretty',
-      log: ['query'],
+      log: ['error'],
     });
   }
 }

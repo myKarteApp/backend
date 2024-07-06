@@ -55,10 +55,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
     /*
       エラーのログを出す
     */
-
+    const idList: string[] = [];
+    const pathSegments = request.url
+      .split('/')
+      .filter((segment) => segment !== '')
+      .map((segment) => {
+        if (segment.length === 36) {
+          idList.push(segment);
+          return ':id';
+        }
+        return segment;
+      });
+    const maskedPath = pathSegments.join('/');
     const ip = request.headers['x-forwarded-for'];
     const currentTime = getCurrentTimeFromRequest(request);
-    const startLogEntry = `[${currentTime.toISOString()} ERROR] ${ip} "${request.method} ${request.url} HTTP/${request['httpVersion']}" ${status}`;
+    const startLogEntry = `[${currentTime.toISOString()} ${status} ERROR] ${request.method} ${maskedPath} HTTP/${request['httpVersion']} ${ip} idList=[${idList.join(', ')}]`;
     const logEntry = `${startLogEntry}\n${errorCode}${stack}`;
     fs.appendFileSync(this.logFilePath, logEntry + '\n', 'utf8');
 

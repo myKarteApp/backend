@@ -23,7 +23,7 @@ import {
   _UpdateAccountInfoDto,
 } from './swaggerDto';
 import { AdminDatasourceProvider } from '@/datasource';
-import { BadRequest } from '@/utils/error';
+import { BadRequest, MyError, Unexpected } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
 import { PrismaClient } from '@prisma/client';
 import { AdminAccountService } from './AdminAccount.service';
@@ -101,6 +101,7 @@ export class AdminAccountController {
     @Param('userId') userId: string,
     @Param('targetUserId') targetUserId: string,
   ) {
+    throw Unexpected(ErrorCode.Error1);
     const account: AccountInfoOfDB = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン済みを確認する
