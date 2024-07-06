@@ -1,9 +1,4 @@
-import {
-  AccountInfoOfDB,
-  SexType,
-  convertIntoAccountInfoOfDB,
-  getEnumValue,
-} from '@/shared';
+import { AccountInfoOfDB, convertIntoAccountInfoOfDB } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { BadRequest } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';

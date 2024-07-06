@@ -27,7 +27,13 @@ export class UserController {
     // 自分自身のユーザーを作る
     const newUserId = v4();
     await this.datasource.transact(async (connect: PrismaClient) => {
-      await this.userService.createUserInfo(dto, authId, newUserId, connect);
+      await this.userService.createUserInfo(
+        dto,
+        authId,
+        newUserId,
+        authId,
+        connect,
+      );
     });
 
     const responseBody: ResponseBody<'createAccountUser'> = {

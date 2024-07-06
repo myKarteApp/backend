@@ -22,6 +22,7 @@ export class AuthCookieProvider {
   public async setAuthSessionId(
     response: ExpressResponse,
     jwsToken: string,
+    createdBy: string,
     _connect?: PrismaClient,
   ) {
     const sessionId = v4();
@@ -34,6 +35,8 @@ export class AuthCookieProvider {
         sessionId: sessionId,
         jwsToken: jwsToken,
         expiredAt: now,
+        createdBy: createdBy,
+        updatedBy: createdBy,
       },
     });
 
@@ -46,6 +49,7 @@ export class AuthCookieProvider {
   public async clearAuthSessionId(
     response: ExpressResponse,
     sessionId: string,
+    updatedBy: string,
     _connect?: PrismaClient,
   ) {
     const con = await this.connect(_connect);
@@ -55,6 +59,7 @@ export class AuthCookieProvider {
       },
       data: {
         isDeleted: false,
+        updatedBy: updatedBy,
       },
     });
     response.clearCookie(this.sessionKey);

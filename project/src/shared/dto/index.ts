@@ -18,6 +18,11 @@ export type AddDefaultColumns = {
   updatedAt: Date;
 };
 
+export type ByColumns = {
+  createdBy: string;
+  updatedBy: string;
+};
+
 /* =======================
 認証系
 ======================= */

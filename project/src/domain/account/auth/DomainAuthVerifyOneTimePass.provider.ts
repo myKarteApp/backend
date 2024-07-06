@@ -16,6 +16,7 @@ export class DomainAuthVerifyOneTimePassProvider {
   public async create(
     authId: string,
     request: ExpressRequest,
+    createdBy: string,
     _connect?: PrismaClient,
   ): Promise<string> {
     const authVerifyOneTimePassId = v4();
@@ -29,6 +30,8 @@ export class DomainAuthVerifyOneTimePassProvider {
       expiresAt: new Date(
         now.getTime() + this.configProvider.ONE_TIME_PASS_EXPIRATION,
       ),
+      createdBy: createdBy,
+      updatedBy: createdBy,
     };
     await this.connect(_connect).authVerifyOneTimePass.create({
       data: data,

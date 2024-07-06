@@ -100,11 +100,13 @@ export class DomainAuthDefaultProvider {
   */
   public async verifyAuthInfo(
     authId: string,
+    updatedBy: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
     return this.connect(_connect).authInfo.update({
       data: {
         isVerify: true,
+        updatedBy: updatedBy,
       },
       where: {
         authId: authId,
@@ -115,6 +117,7 @@ export class DomainAuthDefaultProvider {
   public async update(
     authId: string,
     dto: Partial<CreateAuthInfoDtoForAccount>,
+    updatedBy: string,
     _connect?: PrismaClient,
   ): Promise<void> {
     const data = removeUndefined<CreateAuthInfoDtoForAccount>(dto);
@@ -123,7 +126,10 @@ export class DomainAuthDefaultProvider {
     const result: AuthInfo | null = await this.connect(
       _connect,
     ).authInfo.update({
-      data: data,
+      data: {
+        ...data,
+        updatedBy: updatedBy,
+      },
       where: {
         authId: authId,
       },

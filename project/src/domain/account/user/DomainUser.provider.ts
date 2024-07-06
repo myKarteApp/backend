@@ -51,6 +51,7 @@ export class DomainUserProvider {
     authId: string,
     userId: string,
     dto: Partial<CreateUserInfoDto>,
+    updatedBy: string,
     _connect?: PrismaClient,
   ): Promise<void> {
     const data = removeUndefined<CreateUserInfoDto>(dto);
@@ -59,7 +60,10 @@ export class DomainUserProvider {
     const result: UserInfo | null = await this.connect(
       _connect,
     ).userInfo.update({
-      data: data,
+      data: {
+        ...data,
+        updatedBy: updatedBy,
+      },
       where: {
         authId: authId,
         userId: userId,

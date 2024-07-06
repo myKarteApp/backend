@@ -6,7 +6,9 @@ CREATE TABLE `ApiAuthorization` (
     `endpoint` VARCHAR(191) NOT NULL,
     `authRole` INTEGER NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`apiAuthorization`)
@@ -18,7 +20,9 @@ CREATE TABLE `LoginSession` (
     `jwsToken` MEDIUMTEXT NOT NULL,
     `expiredAt` DATETIME(3) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`sessionId`)
@@ -34,7 +38,9 @@ CREATE TABLE `AuthInfo` (
     `isVerify` BOOLEAN NOT NULL DEFAULT false,
     `isTrial` BOOLEAN NOT NULL DEFAULT false,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `AuthInfo_email_key`(`email`),
@@ -49,7 +55,9 @@ CREATE TABLE `AuthVerifyOneTimePass` (
     `passCode` VARCHAR(191) NOT NULL,
     `expiresAt` DATETIME(3) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`authVerifyOneTimePassId`)
@@ -62,7 +70,9 @@ CREATE TABLE `Trial` (
     `authId` VARCHAR(191) NOT NULL,
     `expiresAt` DATETIME(3) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`trialId`)
@@ -81,7 +91,9 @@ CREATE TABLE `UserInfo` (
     `tel` VARCHAR(191) NOT NULL,
     `profession` VARCHAR(191) NOT NULL DEFAULT '',
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `UserInfo_authId_key`(`authId`),
@@ -94,7 +106,9 @@ CREATE TABLE `BusinessOwnerInfo` (
     `authId` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`bussinessOwnerId`)
@@ -108,7 +122,9 @@ CREATE TABLE `BusinessBranchInfo` (
     `authId` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`businessBranchId`)
@@ -120,7 +136,9 @@ CREATE TABLE `BusinessStaffInfo` (
     `businessBranchId` VARCHAR(191) NOT NULL,
     `authId` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`businessStaffId`)
@@ -131,7 +149,9 @@ CREATE TABLE `ClientInfo` (
     `clientId` VARCHAR(191) NOT NULL,
     `authId` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`clientId`)
@@ -145,7 +165,9 @@ CREATE TABLE `ClientManagement` (
     `businessBranchId` VARCHAR(191) NOT NULL,
     `authId` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`clientManagementId`)
@@ -165,7 +187,9 @@ CREATE TABLE `ClientVisitHistory` (
     `couponTicketsId` VARCHAR(191) NULL,
     `usePointOfCouponTickets` DOUBLE NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`clientVisitHistoryId`)
@@ -177,7 +201,9 @@ CREATE TABLE `ClientkarteHistory` (
     `clientVisitHistoryId` VARCHAR(191) NOT NULL,
     `detail` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`clientKarteHistoryId`)
@@ -194,7 +220,9 @@ CREATE TABLE `SalesManagement` (
     `currency` ENUM('en') NOT NULL DEFAULT 'en',
     `settlement` ENUM('cash', 'card') NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`salesManagementId`)
@@ -212,7 +240,9 @@ CREATE TABLE `ItemSalesDetail` (
     `salesDay` DATETIME(3) NOT NULL,
     `itemMasterID` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`itemSalesDetail`)
@@ -230,7 +260,9 @@ CREATE TABLE `ServiceSalesDetail` (
     `salesDay` DATETIME(3) NOT NULL,
     `clientVisitHistoryId` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`serviceSalesDetail`)
@@ -247,7 +279,9 @@ CREATE TABLE `TemporaryReservationServiceManagement` (
     `leftAt` DATETIME(3) NOT NULL,
     `serviceMasterID` VARCHAR(191) NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`temopraryReservationServiceManagementId`)
@@ -262,6 +296,11 @@ CREATE TABLE `ItemMaster` (
     `authRoleForUpdate` INTEGER NOT NULL DEFAULT 3,
     `excludeTax` BOOLEAN NOT NULL DEFAULT false,
     `costWitoutTax` INTEGER NOT NULL,
+    `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
+    `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`itemMasterID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -275,6 +314,11 @@ CREATE TABLE `ServiceMaster` (
     `authRoleForUpdate` INTEGER NOT NULL DEFAULT 3,
     `excludeTax` BOOLEAN NOT NULL DEFAULT false,
     `costWitoutTaxPerHour` INTEGER NOT NULL,
+    `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `createdBy` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedBy` VARCHAR(191) NOT NULL,
+    `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`serviceMasterID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

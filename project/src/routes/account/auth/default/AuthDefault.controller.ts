@@ -1,8 +1,4 @@
-import {
-  CreateDefaultAuthDto,
-  LoginDefaultAuthDto,
-  validateDefaultAuth,
-} from '@/shared/dto';
+import { validateDefaultAuth } from '@/shared/dto';
 import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { BadRequest, NotFound, Unexpected } from '@/utils/error';
@@ -17,14 +13,11 @@ import { AuthCookieProvider } from '@/domain/http';
 import { MainDatasourceProvider } from '@/datasource';
 
 import { ErrorCode } from '@/utils/errorCode';
-import { SpecLoginController } from '@/spec/SpecLogin.Controller';
 import { AuthDefaultService } from './AuthDefault.service';
 import { MailService } from '@/domain/email/mail.service';
 import { ApiTags, ApiBody } from '@nestjs/swagger';
 import { _DefaultAuthDto } from './swaggerDto';
 import { ConfigProvider } from '@/config/config.provider';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
 import { RequestBody, ResponseBody } from '@/shared/apiSchema/paths';
 
 @ApiTags('AuthDefault')
@@ -60,10 +53,12 @@ export class AuthDefaultController {
         dto,
         newAuthId,
         AuthRole.client,
+        newAuthId,
         connect,
       );
       if (this.configProvider.IS_LOCAL) {
         const verifiedAuthInfo = await this.authService.verifyAuth(
+          newAuthId,
           newAuthId,
           connect,
         );
@@ -74,6 +69,7 @@ export class AuthDefaultController {
       const authVerifyOneTimePassId = await this.authService.createOneTimePass(
         newAuthId,
         request,
+        newAuthId,
         connect,
       );
       const authVerifyOneTimePass: AuthVerifyOneTimePass | null =
@@ -129,6 +125,7 @@ export class AuthDefaultController {
         await this.authCookieProvider.setAuthSessionId(
           response,
           jwsToken,
+          authInfo.authId,
           connect,
         );
         return authInfo.authId;
@@ -156,6 +153,9 @@ export class AuthDefaultController {
       await this.authCookieProvider.clearAuthSessionId(
         response,
         sessionId,
+        // TODO: authIdを使うか検討すル。
+        // logoutのAPIは強制的に起動させたいので、今のところupdateByは無視してる。
+        'logout',
         connect,
       );
     });

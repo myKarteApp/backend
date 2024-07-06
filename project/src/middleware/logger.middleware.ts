@@ -16,8 +16,6 @@ export class LoggerMiddleware implements NestMiddleware {
   }
 
   use(request: Request, response: Response, next: NextFunction) {
-    console.log('=== NestMiddleware ===');
-
     const startTime: Date = getCurrentTimeFromRequest(request);
     const ip = request.headers['x-forwarded-for'];
 

@@ -1,12 +1,10 @@
 import {
   AccountInfoOfDB,
   AuthRole,
-  SexType,
   convertIntoAccountInfoOfDB,
-  getEnumValue,
 } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
-import { BadRequest, NotFound, Unauthorized, Unexpected } from '@/utils/error';
+import { NotFound, Unauthorized } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
 import { escapeSqlString } from '@/utils/sql';
 import { Injectable, Scope } from '@nestjs/common';

@@ -1,11 +1,5 @@
 import { Injectable, Scope } from '@nestjs/common';
-import {
-  AuthInfo,
-  AuthType,
-  AuthVerifyOneTimePass,
-  PrismaClient,
-} from '@prisma/client';
-import { AuthRole, RegisterDto } from '@/shared';
+import { AuthInfo, AuthVerifyOneTimePass, PrismaClient } from '@prisma/client';
 import { MainDatasourceProvider } from '@/datasource';
 import { DomainAuthDefaultProvider } from '@/domain/account/auth/default/DomainAuthDefault.provider';
 import { DomainAuthVerifyOneTimePassProvider } from '@/domain/account/auth/DomainAuthVerifyOneTimePass.provider';
@@ -51,9 +45,10 @@ export class AuthVerifyService {
 
   public async verifyAuthInfo(
     authId: string,
+    updatedBy: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
-    return this.authDefaultProvider.verifyAuthInfo(authId, _connect);
+    return this.authDefaultProvider.verifyAuthInfo(authId, updatedBy, _connect);
   }
   /* =================
   OneTimePass

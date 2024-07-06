@@ -27,6 +27,7 @@ export class AuthDefaultService {
     dto: CreateDefaultAuthDto,
     newAuthId: string,
     authRole: AuthRole,
+    createdBy: string,
     _connect?: PrismaClient,
   ): Promise<void> {
     await this.authDefaultProvider.createAuthInfo(
@@ -38,6 +39,8 @@ export class AuthDefaultService {
         authRole: authRole,
         isVerify: false,
         isTrial: false,
+        createdBy: createdBy,
+        updatedBy: createdBy,
       },
       _connect,
     );
@@ -56,9 +59,10 @@ export class AuthDefaultService {
   }
   public async verifyAuth(
     authId: string,
+    updatedBy: string,
     _connect?: PrismaClient,
   ): Promise<AuthInfo | null> {
-    return this.authDefaultProvider.verifyAuthInfo(authId, _connect);
+    return this.authDefaultProvider.verifyAuthInfo(authId, updatedBy, _connect);
   }
 
   public async findByEmailAndPassword(
@@ -78,9 +82,15 @@ export class AuthDefaultService {
   public async createOneTimePass(
     authId: string,
     request: ExpressRequest,
+    createdBy: string,
     _connect?: PrismaClient,
   ): Promise<string> {
-    return this.authVerifyOneTimePassProvider.create(authId, request, _connect);
+    return this.authVerifyOneTimePassProvider.create(
+      authId,
+      request,
+      createdBy,
+      _connect,
+    );
   }
 
   public async findOneTimePassById(

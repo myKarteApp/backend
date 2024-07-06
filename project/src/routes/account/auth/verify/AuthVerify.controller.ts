@@ -208,7 +208,10 @@ export class AuthVerifyController {
       await this.authVerifyService.findOTP(dto.passCode, dto.queryToken);
       // 認証情報を有効にする
       const verifiedAuthInfo: AuthInfo | null =
-        await this.authVerifyService.verifyAuthInfo(authInfo.authId);
+        await this.authVerifyService.verifyAuthInfo(
+          authInfo.authId,
+          authInfo.authId,
+        );
       if (!verifiedAuthInfo) throw NotFound(ErrorCode.Error33);
     });
     // 事後処理

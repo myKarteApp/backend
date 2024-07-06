@@ -1,10 +1,8 @@
 import {
   AccountInfoOfDB,
   AuthRole,
-  SexType,
   UserIdListDto,
   convertIntoAccountInfoOfDB,
-  getEnumValue,
 } from '@/shared';
 import { SpecDatasourceProvider } from '@/spec/SpecDatasource.provider';
 import { Unauthorized } from '@/utils/error';

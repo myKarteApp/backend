@@ -1,4 +1,4 @@
-import { AccountInfoOfDB, CreateAccountInfoDto, UserIdListDto } from '@/shared';
+import { AccountInfoOfDB } from '@/shared';
 import {
   Body,
   Controller,
@@ -23,7 +23,7 @@ import {
   _UpdateAccountInfoDto,
 } from './swaggerDto';
 import { AdminDatasourceProvider } from '@/datasource';
-import { BadRequest, MyError, Unexpected } from '@/utils/error';
+import { BadRequest } from '@/utils/error';
 import { ErrorCode } from '@/utils/errorCode';
 import { PrismaClient } from '@prisma/client';
 import { AdminAccountService } from './AdminAccount.service';
@@ -48,9 +48,13 @@ export class AdminAccountController {
   ) {
     await this.datasource.transact(async (connect: PrismaClient) => {
       // ログイン済みを確認する
-      await this.adminAccountService.validateAuth(request, userId, connect);
+      const auth: AccountInfoOfDB = await this.adminAccountService.validateAuth(
+        request,
+        userId,
+        connect,
+      );
 
-      await this.adminAccountService.create(dto, connect);
+      await this.adminAccountService.create(dto, auth.authId, connect);
       if (sendEmail) {
         // TODO: メールを送信する
       }
@@ -144,6 +148,7 @@ export class AdminAccountController {
         myAccount.authRole,
         targetUserId,
         dto,
+        myAccount.authId,
         connect,
       );
     });

@@ -21,7 +21,7 @@ import { Request as ExpressRequest } from 'express';
 import { v4 } from 'uuid';
 
 @Injectable({ scope: Scope.REQUEST })
-export class AdminAccountService {
+export class AdminTestService {
   constructor(
     private readonly datasource: AdminDatasourceProvider,
     // 認証用
@@ -30,10 +30,10 @@ export class AdminAccountService {
     // create, update
     private readonly domainAuthDefaultProvider: DomainAuthDefaultProvider,
     private readonly domainUserProvider: DomainUserProvider,
-    // read
-    private readonly domainAccountGetListProvider: DomainAccountGetListProvider,
-    private readonly domainAccountGetDetailProvider: DomainAccountGetDetailProvider,
-    private readonly domainAccountGetListByIdListProvider: DomainAccountGetListByIdListProvider,
+    // // read
+    // private readonly domainAccountGetListProvider: DomainAccountGetListProvider,
+    // private readonly domainAccountGetDetailProvider: DomainAccountGetDetailProvider,
+    // private readonly domainAccountGetListByIdListProvider: DomainAccountGetListByIdListProvider,
   ) {}
   /* ============================
     認証用
@@ -106,129 +106,129 @@ export class AdminAccountService {
     );
   }
 
-  async getDetail(
-    authId: string,
-    authRole: AuthRole,
-    targetUserId: string,
-    _connect?: PrismaClient,
-  ): Promise<AccountInfoOfDB> {
-    return this.domainAccountGetDetailProvider.getDetailByAdmin(
-      authId,
-      authRole,
-      targetUserId,
-      _connect,
-    );
-  }
+  // async getDetail(
+  //   authId: string,
+  //   authRole: AuthRole,
+  //   targetUserId: string,
+  //   _connect?: PrismaClient,
+  // ): Promise<AccountInfoOfDB> {
+  //   return this.domainAccountGetDetailProvider.getDetailByAdmin(
+  //     authId,
+  //     authRole,
+  //     targetUserId,
+  //     _connect,
+  //   );
+  // }
 
-  async getAllList(
-    authId: string,
-    authRole: AuthRole,
-    _connect?: PrismaClient,
-  ): Promise<AccountInfoOfDB[]> {
-    return this.domainAccountGetListProvider.getAllListByAdmin(
-      authId,
-      authRole,
-      _connect,
-    );
-  }
+  // async getAllList(
+  //   authId: string,
+  //   authRole: AuthRole,
+  //   _connect?: PrismaClient,
+  // ): Promise<AccountInfoOfDB[]> {
+  //   return this.domainAccountGetListProvider.getAllListByAdmin(
+  //     authId,
+  //     authRole,
+  //     _connect,
+  //   );
+  // }
 
-  async update(
-    authId: string,
-    authRole: AuthRole,
-    targetUserId: string,
-    dto: Partial<CreateAccountInfoDto>,
-    updatedBy: string,
-    _connect?: PrismaClient,
-  ): Promise<void> {
-    // authIdを取得する
-    // NOTE: 存在しなければエラーが発生している
-    const targetAccount: AccountInfoOfDB =
-      await this.domainAccountGetDetailProvider.getDetailByAdmin(
-        authId,
-        authRole,
-        targetUserId,
-        _connect,
-      );
-    const { user } = dto;
-    const auth = { ...dto };
-    // 認証情報を更新する
-    if (user) delete auth['user'];
-    await this.domainAuthDefaultProvider.update(
-      targetAccount.authId,
-      auth,
-      updatedBy,
-      _connect,
-    );
-    // ユーザー情報を更新する
-    if (user) {
-      await this.domainUserProvider.update(
-        targetAccount.authId,
-        targetUserId,
-        user,
-        updatedBy,
-        _connect,
-      );
-    }
-  }
+  // async update(
+  //   authId: string,
+  //   authRole: AuthRole,
+  //   targetUserId: string,
+  //   dto: Partial<CreateAccountInfoDto>,
+  //   updatedBy: string,
+  //   _connect?: PrismaClient,
+  // ): Promise<void> {
+  //   // authIdを取得する
+  //   // NOTE: 存在しなければエラーが発生している
+  //   const targetAccount: AccountInfoOfDB =
+  //     await this.domainAccountGetDetailProvider.getDetailByAdmin(
+  //       authId,
+  //       authRole,
+  //       targetUserId,
+  //       _connect,
+  //     );
+  //   const { user } = dto;
+  //   const auth = { ...dto };
+  //   // 認証情報を更新する
+  //   if (user) delete auth['user'];
+  //   await this.domainAuthDefaultProvider.update(
+  //     targetAccount.authId,
+  //     auth,
+  //     updatedBy,
+  //     _connect,
+  //   );
+  //   // ユーザー情報を更新する
+  //   if (user) {
+  //     await this.domainUserProvider.update(
+  //       targetAccount.authId,
+  //       targetUserId,
+  //       user,
+  //       updatedBy,
+  //       _connect,
+  //     );
+  //   }
+  // }
 
-  async delete(
-    authId: string,
-    authRole: AuthRole,
-    targetUserId: string,
-    _connect?: PrismaClient,
-  ): Promise<void> {
-    // authIdを取得する
-    // NOTE: 存在しなければエラーが発生している
-    const targetAccount: AccountInfoOfDB =
-      await this.domainAccountGetDetailProvider.getDetailByAdmin(
-        authId,
-        authRole,
-        targetUserId,
-        _connect,
-      );
-    // 認証情報を更新する
-    await this.domainAuthDefaultProvider.delete(
-      [targetAccount.authId],
-      _connect,
-    );
-    // ユーザー情報を更新する
-    if (targetAccount.user) {
-      await this.domainUserProvider.delete(
-        [targetAccount.user.userId],
-        _connect,
-      );
-    }
-  }
+  // async delete(
+  //   authId: string,
+  //   authRole: AuthRole,
+  //   targetUserId: string,
+  //   _connect?: PrismaClient,
+  // ): Promise<void> {
+  //   // authIdを取得する
+  //   // NOTE: 存在しなければエラーが発生している
+  //   const targetAccount: AccountInfoOfDB =
+  //     await this.domainAccountGetDetailProvider.getDetailByAdmin(
+  //       authId,
+  //       authRole,
+  //       targetUserId,
+  //       _connect,
+  //     );
+  //   // 認証情報を更新する
+  //   await this.domainAuthDefaultProvider.delete(
+  //     [targetAccount.authId],
+  //     _connect,
+  //   );
+  //   // ユーザー情報を更新する
+  //   if (targetAccount.user) {
+  //     await this.domainUserProvider.delete(
+  //       [targetAccount.user.userId],
+  //       _connect,
+  //     );
+  //   }
+  // }
 
-  async bulkDelete(
-    authId: string,
-    authRole: AuthRole,
-    dto: UserIdListDto,
-    _connect?: PrismaClient,
-  ): Promise<void> {
-    const targetAccount: AccountInfoOfDB[] =
-      await this.domainAccountGetListByIdListProvider.getListByAdmin(
-        authId,
-        authRole,
-        dto,
-        _connect,
-      );
-    const authIdList: string[] = targetAccount.map((rec) => {
-      return rec.authId;
-    });
+  // async bulkDelete(
+  //   authId: string,
+  //   authRole: AuthRole,
+  //   dto: UserIdListDto,
+  //   _connect?: PrismaClient,
+  // ): Promise<void> {
+  //   const targetAccount: AccountInfoOfDB[] =
+  //     await this.domainAccountGetListByIdListProvider.getListByAdmin(
+  //       authId,
+  //       authRole,
+  //       dto,
+  //       _connect,
+  //     );
+  //   const authIdList: string[] = targetAccount.map((rec) => {
+  //     return rec.authId;
+  //   });
 
-    console.log(targetAccount);
-    // 認証情報を更新する
-    await this.domainAuthDefaultProvider.delete(authIdList, _connect);
-    // ユーザー情報を更新する
-    const userIdList: string[] = [];
-    targetAccount.forEach((rec) => {
-      if (rec.user) userIdList.push(rec.user.userId);
-    });
-    if (userIdList.length > 0) {
-      await this.domainUserProvider.delete(userIdList, _connect);
-    }
-  }
+  //   console.log(targetAccount);
+  //   // 認証情報を更新する
+  //   await this.domainAuthDefaultProvider.delete(authIdList, _connect);
+  //   // ユーザー情報を更新する
+  //   const userIdList: string[] = [];
+  //   targetAccount.forEach((rec) => {
+  //     if (rec.user) userIdList.push(rec.user.userId);
+  //   });
+  //   if (userIdList.length > 0) {
+  //     await this.domainUserProvider.delete(userIdList, _connect);
+  //   }
+  // }
   /* ============================
     以下、その他
   ============================ */

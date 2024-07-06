@@ -19,6 +19,7 @@ export class UserService {
     dto: CreateUserInfoDto,
     authId: string,
     newUserId: string,
+    createdBy: string,
     _connect?: PrismaClient,
   ): Promise<void> {
     await this.userProvider.createUserInfo(
@@ -26,6 +27,8 @@ export class UserService {
         authId: authId,
         userId: newUserId,
         ...dto,
+        createdBy: createdBy,
+        updatedBy: createdBy,
       },
       _connect,
     );

@@ -7,9 +7,15 @@ import { DomainClientGetListProvider } from '@/domain/account/roles/client/Domai
 import { DomainClientGetDetailProvider } from '@/domain/account/roles/client/DomainClientGetDetail.provider';
 import { DomainModule } from '@/domain/domain.module';
 import { RouterAdminAccountModule } from './account/RouterAdminAccount.module';
+import { RouterAdminTestModule } from './test/AdminTest.module';
 
 @Module({
-  imports: [AdminDatasourceModule, DomainModule, RouterAdminAccountModule],
+  imports: [
+    AdminDatasourceModule,
+    DomainModule,
+    RouterAdminAccountModule,
+    RouterAdminTestModule,
+  ],
   providers: [
     // メイン処理
     AdminService,

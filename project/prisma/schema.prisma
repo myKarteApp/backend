@@ -26,10 +26,10 @@ model ApiAuthorization {
   authRole Int
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
-  // updatedBy String
-  // createdBy String
 }
 
 // ===========================
@@ -42,7 +42,9 @@ model LoginSession {
   jwsToken String @db.MediumText
   expiredAt DateTime
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -60,7 +62,9 @@ model AuthInfo {
   isVerify Boolean @default(false) //本人確認フラグ
   isTrial Boolean @default(false)
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
   user   UserInfo?
 }
@@ -72,7 +76,9 @@ model AuthVerifyOneTimePass {
   passCode String
   expiresAt DateTime
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -83,7 +89,9 @@ model Trial {
   authId String
   expiresAt DateTime
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -104,7 +112,9 @@ model UserInfo {
   profession String @default("") // 職業
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 
   auth AuthInfo @relation(fields: [authId], references: [authId])
@@ -122,7 +132,9 @@ model BusinessOwnerInfo {
   address String // ハガキを送りたいため
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -135,7 +147,9 @@ model BusinessBranchInfo {
   address String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -152,7 +166,9 @@ model BusinessStaffInfo {
   authId String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 // AuthInfo - UserInfo - ClientInfo (全て1多1)
@@ -161,7 +177,9 @@ model ClientInfo {
   authId String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -183,7 +201,9 @@ model ClientManagement {
   authId String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -211,7 +231,9 @@ model ClientVisitHistory {
   usePointOfCouponTickets Float?
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -220,8 +242,11 @@ model ClientkarteHistory {
   clientVisitHistoryId String
   // これはmongoがいいかも
   detail String
+
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -248,8 +273,11 @@ model SalesManagement {
   salesDay DateTime
   currency CurrencyType @default(en)
   settlement SettlementType
+
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -273,7 +301,9 @@ model ItemSalesDetail {
   itemMasterID String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 // 売れたサービス
@@ -296,7 +326,9 @@ model ServiceSalesDetail {
   clientVisitHistoryId String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -324,7 +356,9 @@ model TemporaryReservationServiceManagement {
   serviceMasterID String
 
   isDeleted Boolean @default(false)
+  createdBy String
   createdAt DateTime @default(now())
+  updatedBy String
   updatedAt DateTime @updatedAt
 }
 
@@ -346,6 +380,11 @@ model ItemMaster {
   authRoleForUpdate Int @default(3)
   excludeTax Boolean @default(false)
   costWitoutTax Int // 税抜き価格。切り捨て
+  isDeleted Boolean @default(false)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedBy String
+  updatedAt DateTime @updatedAt
 }
 
 model ServiceMaster {
@@ -356,4 +395,9 @@ model ServiceMaster {
   authRoleForUpdate Int @default(3)
   excludeTax Boolean @default(false)
   costWitoutTaxPerHour Int // 税抜き価格。切り捨て
+  isDeleted Boolean @default(false)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedBy String
+  updatedAt DateTime @updatedAt
 }
