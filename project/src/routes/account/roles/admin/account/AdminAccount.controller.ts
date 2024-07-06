@@ -101,7 +101,6 @@ export class AdminAccountController {
     @Param('userId') userId: string,
     @Param('targetUserId') targetUserId: string,
   ) {
-    throw Unexpected(ErrorCode.Error1);
     const account: AccountInfoOfDB = await this.datasource.transact(
       async (connect: PrismaClient) => {
         // ログイン済みを確認する
